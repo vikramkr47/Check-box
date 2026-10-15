@@ -1,21 +1,17 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
-    <!-- Ensure proper scaling on all devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SYS.HABIT // TABLET HUD</title>
-    
-    <!-- Tailwind CSS -->
+    <title>SYS.HABIT // V2.6 STREAK_ENGINE [TABLET WIDESCREEN HUD]</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Syne, Space Grotesk, JetBrains Mono, Share Tech Mono -->
+    <!-- Google Fonts: Syne, Space Grotesk, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Share+Tech+Mono&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -26,16 +22,16 @@
                         display: ['Syne', 'Space Grotesk', 'sans-serif'],
                         grotesk: ['Space Grotesk', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
-                        tech: ['Share Tech Mono', 'monospace'],
                     },
                     colors: {
                         obsidian: '#08080C',
                         panel: '#0E0F17',
-                        panelLight: '#151724',
+                        panelLight: '#151826',
                         lime: '#CCFF00',
-                        cyberOrange: '#FF4D00',
                         cyan: '#00F0FF',
-                        violet: '#9D4EDD',
+                        cyberOrange: '#FF4D00',
+                        magenta: '#FF0055',
+                        gold: '#FFB800',
                     }
                 }
             }
@@ -45,9 +41,10 @@
     <style>
         :root {
             --lime: #CCFF00;
-            --orange: #FF4D00;
             --cyan: #00F0FF;
-            --violet: #9D4EDD;
+            --orange: #FF4D00;
+            --magenta: #FF0055;
+            --gold: #FFB800;
             --obsidian: #08080C;
         }
 
@@ -57,22 +54,22 @@
             user-select: none;
         }
 
-        body {
+        html, body {
             background-color: #08080C;
             color: #F2F4F8;
             font-family: 'Space Grotesk', sans-serif;
             overflow-x: hidden;
-            /* Dot-Matrix Grid Background */
+            min-height: 100vh;
+            /* Nothing OS + Cyber Hardware Dot-Matrix Background */
             background-image: 
-                radial-gradient(rgba(204, 255, 0, 0.12) 1px, transparent 1px),
-                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 16px 16px, 64px 64px, 64px 64px;
-            background-position: 0 0, 0 0, 0 0;
+                radial-gradient(rgba(204, 255, 0, 0.14) 1px, transparent 1px),
+                linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 18px 18px, 72px 72px, 72px 72px;
         }
 
-        /* CRT Scanline Overlay */
-        .scanlines::after {
+        /* Toggleable CRT Scanline Overlay */
+        body.scanlines::after {
             content: "";
             position: fixed;
             inset: 0;
@@ -80,555 +77,1860 @@
                 to bottom,
                 transparent 0px,
                 transparent 2px,
-                rgba(0, 0, 0, 0.25) 3px,
-                rgba(0, 0, 0, 0.25) 4px
+                rgba(0, 0, 0, 0.28) 3px,
+                rgba(0, 0, 0, 0.28) 4px
             );
             pointer-events: none;
-            z-index: 90;
+            z-index: 95;
         }
 
-        /* Hardware Chassis Styles */
+        /* Hardware Chassis & Exposed Crosshairs */
         .hud-chassis {
             background: #0E0F17;
-            border: 1.5px solid #26293E;
-            box-shadow: 4px 4px 0px #000000;
+            border: 1.5px solid #25293E;
+            box-shadow: 5px 5px 0px #020204;
             position: relative;
         }
 
-        .hud-chassis-lime {
-            background: #0E0F17;
+        .hud-chassis-active {
+            background: #10121C;
             border: 1.5px solid #CCFF00;
-            box-shadow: 4px 4px 0px rgba(204, 255, 0, 0.22);
+            box-shadow: 5px 5px 0px rgba(204, 255, 0, 0.18);
         }
 
-        /* Mechanical Switch Buttons */
-        .te-btn {
-            border: 1.5px solid #2E324B;
-            box-shadow: 0 4px 0 #030305;
-            transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.08s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .te-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #030305;
-        }
-
-        .te-trigger-on {
-            background: #CCFF00;
-            color: #08080C;
-            border-color: #FFFFFF;
-            box-shadow: 0 4px 0 #658000, 0 0 18px rgba(204, 255, 0, 0.45);
-        }
-
-        .te-trigger-off {
-            background: #141622;
-            color: #6E7691;
-            border-color: #2B2F46;
-            box-shadow: 0 4px 0 #050508;
-        }
-
-        /* Crosshairs */
         .corner-screws::before,
         .corner-screws::after {
             content: "+";
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
+            font-size: 11px;
             line-height: 1;
-            color: #464B65;
+            color: #4A506E;
             position: absolute;
-            top: 5px;
+            top: 6px;
             pointer-events: none;
         }
-        .corner-screws::before { left: 7px; }
-        .corner-screws::after { right: 7px; }
+        .corner-screws::before { left: 8px; }
+        .corner-screws::after { right: 8px; }
 
+        /* Teenage Engineering Style Mechanical Switches */
+        .te-btn {
+            border: 1.5px solid #2E334D;
+            box-shadow: 0 4px 0 #030306;
+            transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.08s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease;
+        }
+        .te-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #030306 !important;
+        }
+
+        /* Scrollbar utility */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .led-lit-lime { background: #CCFF00; box-shadow: 0 0 8px rgba(204, 255, 0, 0.75); }
-        .led-lit-cyan { background: #00F0FF; box-shadow: 0 0 8px rgba(0, 240, 255, 0.75); }
-        .led-lit-orange { background: #FF4D00; box-shadow: 0 0 8px rgba(255, 77, 0, 0.75); }
-        .led-lit-violet { background: #9D4EDD; box-shadow: 0 0 8px rgba(157, 78, 221, 0.75); }
+        /* Modal Pop Animation */
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-pop {
+            animation: modalPop 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Pulse Glow for Spline Wave */
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.85)); }
+            50% { filter: drop-shadow(0 0 14px rgba(204, 255, 0, 0.95)); }
+        }
+        .spline-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
     </style>
 </head>
-<body id="appBody" class="min-h-screen pb-32 selection:bg-lime selection:text-obsidian scanlines">
+<body id="appBody" class="scanlines pb-28 lg:pb-24 selection:bg-lime selection:text-obsidian">
 
+    <!-- FULLSCREEN SPARK PARTICLE CANVAS -->
     <canvas id="sparkCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
 
-    <!-- TABLET OPTIMIZED WRAPPER (max-w-7xl spreads across the tablet screen) -->
-    <div id="mainHudWrapper" class="w-full max-w-7xl mx-auto px-4 md:px-8 pt-4 relative z-10">
+    <!-- FULL TABLET & WIDESCREEN CONTAINER (Expands edge-to-edge up to 1600px) -->
+    <div class="w-full max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-8 pt-3 md:pt-5 relative z-10">
 
-        <!-- TOP TELEMETRY -->
-        <div class="flex items-center justify-between px-3 py-2 mb-4 bg-[#0C0D14] border border-[#23263A] font-mono text-xs tracking-widest text-slate-400">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 bg-lime inline-block animate-ping"></span>
-                <span class="text-lime font-bold">SYS.ONLINE</span>
-                <span class="text-slate-600">//</span>
-                <span id="liveClockHud">00:00:00</span>
+        <!-- =========================================================
+             TOP SYSTEM TELEMETRY BAR (Quick Controls + Live Clock)
+        ========================================================== -->
+        <div class="hud-chassis px-3 sm:px-5 py-2.5 mb-4 flex flex-wrap items-center justify-between gap-2 bg-[#0B0C13] border-[#252A40] font-mono text-xs">
+            <!-- Left: System Status & Clock -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span class="w-2.5 h-2.5 rounded-full bg-lime animate-ping"></span>
+                <span class="text-lime font-extrabold tracking-widest">SYS.HABIT // V2.6</span>
+                <span class="text-slate-600 hidden sm:inline">|</span>
+                <span id="liveClockHud" class="text-cyan font-bold tracking-wider">00:00:00</span>
+                <span id="timeTravelBadge" class="hidden px-2 py-0.5 bg-cyberOrange/20 border border-cyberOrange text-cyberOrange text-[10px] font-extrabold uppercase">
+                    TIME_TRAVEL_ACTIVE
+                </span>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleScanlines()" id="crtBtn" class="px-2 py-1 bg-[#161928] border border-slate-700 text-[10px] text-cyan hover:border-cyan transition">
+
+            <!-- Right: Hardware Quick Toggles (CRT, SFX, Backup, New Quest) -->
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <button onclick="toggleScanlines()" id="crtBtn" class="te-btn px-2.5 py-1 bg-[#141726] text-[11px] font-bold text-lime border-lime/50 hover:border-lime">
                     CRT:ON
                 </button>
-                <span class="text-slate-500 hidden md:inline">TABLET_V2.6</span>
+                <button onclick="toggleAudioSfx()" id="sfxBtn" class="te-btn px-2.5 py-1 bg-[#141726] text-[11px] font-bold text-cyan border-cyan/50 hover:border-cyan">
+                    SFX:ON
+                </button>
+                <button onclick="exportBackupJson()" title="Export JSON Backup" class="te-btn px-2.5 py-1 bg-[#141726] text-[11px] font-bold text-gold border-gold/40 hover:border-gold hidden sm:inline-flex items-center gap-1">
+                    <span>[EXPORT]</span>
+                </button>
+                <button onclick="triggerImportJson()" title="Import JSON Backup" class="te-btn px-2.5 py-1 bg-[#141726] text-[11px] font-bold text-slate-300 border-slate-600 hover:border-white hidden sm:inline-flex items-center gap-1">
+                    <span>[IMPORT]</span>
+                </button>
+                <button onclick="openForgeModal()" class="te-btn px-3 py-1 bg-lime text-obsidian border-white text-[11px] font-extrabold uppercase tracking-wider">
+                    + NEW QUEST
+                </button>
             </div>
         </div>
 
-        <!-- RESPONSIVE HEADER: Splits into columns on tablet -->
-        <header class="hud-chassis corner-screws p-4 md:p-6 mb-6">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <!-- Left: Player Rank & Level Info -->
-                <div class="flex-1 min-w-0 w-full">
-                    <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span class="font-mono text-[10px] md:text-xs font-extrabold px-2 py-1 bg-lime text-obsidian tracking-wider uppercase">
-                            PLAYER_HUD
-                        </span>
-                        <span id="rankBadge" class="font-mono text-[10px] md:text-xs font-bold px-2 py-1 bg-[#161826] border border-cyan/50 text-cyan tracking-wider uppercase">
-                            [C-RANK ARCHITECT]
-                        </span>
+        <!-- =========================================================
+             TAB 01: COMMAND_DECK (MAIN DASHBOARD)
+        ========================================================== -->
+        <div id="tabViewDeck" class="space-y-5">
+
+            <!-- TOP COCKPIT GRID: On Tablet Portrait/Landscape splits into 12 columns -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
+
+                <!-- LEFT 5 COLS: HUNTER / DEVELOPER RPG SYSTEM HUD -->
+                <header class="lg:col-span-5 hud-chassis corner-screws p-4 sm:p-5 flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-4">
+                        <!-- Player Level & Rank -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-mono text-[10px] font-extrabold px-2 py-0.5 bg-lime text-obsidian uppercase tracking-wider">
+                                    HUNTER_OS
+                                </span>
+                                <span id="rankBadge" class="font-mono text-[10px] sm:text-xs font-extrabold px-2 py-0.5 bg-[#151828] border border-cyan text-cyan tracking-wider uppercase">
+                                    [E-RANK INITIATE]
+                                </span>
+                            </div>
+
+                            <div class="flex items-baseline gap-3 mt-3">
+                                <h1 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-none">
+                                    LVL.<span id="playerLevelNum" class="text-lime">01</span>
+                                </h1>
+                                <div class="font-mono text-xs sm:text-sm text-slate-400">
+                                    <span id="xpCurrentNum" class="text-white font-bold">000</span> / <span id="xpNextLevelNum">250</span> XP
+                                </div>
+                            </div>
+
+                            <div class="mt-2 flex items-center gap-3 font-mono text-[11px]">
+                                <span id="totalXpReadout" class="text-cyan">TOTAL: 0 XP</span>
+                                <span class="text-slate-600">•</span>
+                                <span id="bestStreakReadout" class="text-cyberOrange font-bold">🔥 MAX STREAK: 0D</span>
+                            </div>
+                        </div>
+
+                        <!-- Circular Segmented Daily Sync Reactor Gauge -->
+                        <div class="w-28 sm:w-32 flex-shrink-0 bg-[#08090F] border border-[#242942] p-2.5 flex flex-col items-center justify-center">
+                            <span class="font-mono text-[9px] text-slate-400 tracking-widest uppercase mb-1">SYNC_REACTOR</span>
+                            <div class="relative w-20 h-20 flex items-center justify-center">
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 72 72">
+                                    <circle cx="36" cy="36" r="29" stroke="#1A1E30" stroke-width="6" stroke-dasharray="6 3" fill="none" />
+                                    <circle id="reactorGaugeCircle" cx="36" cy="36" r="29" stroke="#CCFF00" stroke-width="6"
+                                        stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="butt" fill="none"
+                                        class="transition-all duration-500 ease-out" />
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span id="dailySyncPercent" class="font-mono text-lg font-extrabold text-white leading-none">0%</span>
+                                    <span id="dailySyncFraction" class="font-mono text-[10px] text-lime mt-0.5">0/5</span>
+                                </div>
+                            </div>
+                            <span id="reactorStatusText" class="font-mono text-[9px] text-slate-400 uppercase mt-1 tracking-widest">STANDBY</span>
+                        </div>
                     </div>
 
-                    <div class="flex items-baseline gap-3 mt-3">
-                        <h1 class="font-display text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-none">
-                            LVL.<span id="playerLevelNum" class="text-lime">01</span>
-                        </h1>
-                        <span id="xpCounterText" class="font-mono text-sm md:text-base text-slate-400">
-                            000 / 250 XP
-                        </span>
+                    <!-- 14-Segment Hardware EXP Capacitor Bar -->
+                    <div class="mt-5 pt-3 border-t border-[#1D2133]">
+                        <div class="flex items-center justify-between font-mono text-[10px] text-slate-400 mb-1.5">
+                            <span>EXP_CAPACITOR // 14-CELL_ARRAY</span>
+                            <span id="xpToNextLabel" class="text-lime font-bold">250 XP TO NEXT RANK</span>
+                        </div>
+                        <div id="xpCapacitorBar" class="w-full h-4 bg-[#06070B] border border-[#2B3048] p-0.5 grid grid-cols-14 gap-1" style="grid-template-columns: repeat(14, minmax(0, 1fr));">
+                            <!-- 14 segments injected by JS -->
+                        </div>
                     </div>
+                </header>
 
-                    <!-- Segmented Hardware XP Progress Bar -->
-                    <div class="mt-4">
-                        <div class="flex items-center justify-between font-mono text-[10px] md:text-xs text-slate-400 mb-1.5">
-                            <span>EXP_CAPACITOR</span>
-                            <span id="totalStreakTop" class="text-cyberOrange font-bold flex items-center gap-1">
-                                ⚡ MAX_STREAK: 0D
+                <!-- RIGHT 7 COLS: EQUALIZER POWER-CORE TELEMETRY & SPLINE WAVE -->
+                <section class="lg:col-span-7 hud-chassis corner-screws p-4 sm:p-5 flex flex-col justify-between">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-cyan inline-block"></span>
+                                <h2 class="font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white">
+                                    POWER-CORE TELEMETRY // 7-DAY EQUALIZER &amp; SPLINE WAVE
+                                </h2>
+                            </div>
+                            <p class="font-mono text-[11px] text-slate-400 mt-0.5">
+                                Tap any telemetry column below to time-travel &amp; log missed completions
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono text-xs">
+                            <span id="weeklyAvgBadge" class="px-2.5 py-1 bg-[#131726] border border-cyan/40 text-cyan font-bold">
+                                WK_AVG: 0%
                             </span>
-                        </div>
-                        <div class="w-full h-4 bg-[#07080D] border border-[#2B3048] p-0.5 flex gap-1" id="xpSegmentedBar">
-                            <!-- 14 LED XP Segments injected via JS -->
+                            <button onclick="jumpToToday()" id="returnTodayBtn" class="hidden te-btn px-2.5 py-1 bg-cyberOrange text-obsidian border-white font-extrabold text-[11px]">
+                                [RETURN TO TODAY]
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Right: Segmented Radial Reactor Sync Gauge (Larger on Tablet) -->
-                <div class="w-full md:w-32 flex-shrink-0 bg-[#090A10] border border-[#24283E] p-3 flex flex-col items-center justify-center relative">
-                    <span class="font-mono text-[9px] md:text-[10px] text-slate-500 tracking-widest uppercase mb-2">DAILY_SYNC</span>
-                    <div class="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
-                        <svg class="w-full h-full -rotate-90" viewBox="0 0 68 68">
-                            <circle cx="34" cy="34" r="27" stroke="#1A1D2E" stroke-width="6" stroke-dasharray="6 3" fill="none" />
-                            <circle id="reactorGaugeCircle" cx="34" cy="34" r="27" stroke="#CCFF00" stroke-width="6"
-                                stroke-dasharray="169.6" stroke-dashoffset="169.6" stroke-linecap="butt" fill="none"
-                                class="transition-all duration-500 ease-out" />
+                    <!-- Equalizer + SVG Energy Spline Container -->
+                    <div class="relative w-full h-44 sm:h-48 bg-[#08090F] border border-[#22263A] p-3 flex flex-col justify-end overflow-hidden">
+                        <!-- Subtle Horizontal Grid Lines -->
+                        <div class="absolute inset-x-3 top-4 bottom-8 flex flex-col justify-between pointer-events-none opacity-25">
+                            <div class="border-b border-dashed border-slate-500 text-[9px] font-mono text-slate-400">100%</div>
+                            <div class="border-b border-dashed border-slate-600 text-[9px] font-mono text-slate-500">50%</div>
+                            <div class="border-b border-slate-700 text-[9px] font-mono text-slate-600">0%</div>
+                        </div>
+
+                        <!-- Glowing SVG Spline Wave Overlay -->
+                        <svg id="telemetrySplineSvg" class="absolute inset-x-3 top-4 bottom-8 w-[calc(100%-1.5rem)] h-[calc(100%-3rem)] pointer-events-none z-20 overflow-visible" preserveAspectRatio="none" viewBox="0 0 700 140">
+                            <!-- Injected via JS -->
                         </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="dailySyncPercent" class="font-mono text-lg md:text-xl font-extrabold text-white leading-none">0%</span>
-                            <span id="dailySyncFraction" class="font-mono text-[10px] md:text-xs text-lime mt-1">0/5</span>
+
+                        <!-- 7 Equalizer Day Columns -->
+                        <div id="equalizerColumnsGrid" class="relative z-10 grid grid-cols-7 gap-2 sm:gap-3 h-full items-end pt-3">
+                            <!-- Injected via JS -->
                         </div>
                     </div>
-                    <span id="syncStatusLabel" class="font-mono text-[9px] md:text-[10px] text-slate-400 uppercase mt-2 tracking-wider">STANDBY</span>
+                </section>
+
+            </div>
+
+            <!-- =========================================================
+                 7-DAY CHRONO TIME-TRAVEL SELECTOR STRIP + WEEK SHIFT
+            ========================================================== -->
+            <section class="hud-chassis p-3 sm:p-4 bg-[#0B0D15]">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5 font-mono text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-cyan/15 border border-cyan/50 text-cyan font-bold text-[10px]">CHRONO_SELECT</span>
+                        <span id="selectedDateBanner" class="text-white font-bold tracking-wider">THU, OCT 15 // TODAY [LIVE]</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="shiftWeekOffset(-1)" class="te-btn px-2.5 py-1 bg-[#141726] text-slate-300 hover:text-white text-[11px] font-bold">
+                            &lt;&lt; PREV_7D
+                        </button>
+                        <button onclick="jumpToToday()" class="te-btn px-2.5 py-1 bg-[#141726] text-lime border-lime/40 text-[11px] font-bold">
+                            [TODAY]
+                        </button>
+                        <button onclick="shiftWeekOffset(1)" id="nextWeekBtn" class="te-btn px-2.5 py-1 bg-[#141726] text-slate-300 hover:text-white text-[11px] font-bold">
+                            NEXT_7D &gt;&gt;
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </header>
 
-        <!-- 7-DAY TIME-TRAVEL HARDWARE SELECTOR KEYS -->
-        <section class="mb-6">
-            <div class="flex items-center justify-between mb-2 px-1 font-mono text-xs">
-                <span class="text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <span class="w-2 h-2 bg-cyan inline-block"></span>
-                    CHRONO_BUFFER // 07_DAYS
-                </span>
-                <span id="selectedDateReadout" class="text-cyan font-bold">2026.10.15 [TODAY]</span>
-            </div>
-            <!-- Slightly larger gap on tablet -->
-            <div id="chronoStripGrid" class="grid grid-cols-7 gap-2 md:gap-3">
-                <!-- Populated via JS -->
-            </div>
-        </section>
+                <!-- 7-Day Interactive Hardware Keys -->
+                <div id="chronoStripGrid" class="grid grid-cols-7 gap-1.5 sm:gap-3">
+                    <!-- Populated via JS -->
+                </div>
+            </section>
 
-        <!-- TACTICAL CATEGORY FILTER SWITCHES -->
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 mb-6" id="categorySwitchBar">
-            <!-- Populated manually in HTML -->
-            <button onclick="setFilterCategory('ALL')" data-cat="ALL" class="te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-lime text-obsidian border-white whitespace-nowrap">
-                [ALL_MODS]
-            </button>
-            <button onclick="setFilterCategory('CORE_CODE')" data-cat="CORE_CODE" class="te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
-                [CORE_CODE]
-            </button>
-            <button onclick="setFilterCategory('BIOS_FIT')" data-cat="BIOS_FIT" class="te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
-                [BIOS_FIT]
-            </button>
-            <button onclick="setFilterCategory('GIT_OPS')" data-cat="GIT_OPS" class="te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
-                [GIT_OPS]
-            </button>
-            <button onclick="setFilterCategory('ACAD_LAB')" data-cat="ACAD_LAB" class="te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
-                [ACAD_LAB]
-            </button>
+            <!-- =========================================================
+                 FILTER BAR & SEARCH / QUICK ACTIONS FOR HABIT CASSETTES
+            ========================================================== -->
+            <section class="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
+                <!-- Category & Status Filter Switches -->
+                <div id="categoryFilterBar" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- Right: Module Count + New Quest Button -->
+                <div class="flex items-center justify-between md:justify-end gap-3 font-mono text-xs">
+                    <span id="moduleCountReadout" class="text-slate-400 font-bold">05 MODULES ONLINE</span>
+                    <button onclick="openForgeModal()" class="te-btn px-3.5 py-2 bg-cyberOrange text-obsidian border-white font-extrabold uppercase tracking-wider">
+                        [+ FORGE NEW QUEST]
+                    </button>
+                </div>
+            </section>
+
+            <!-- =========================================================
+                 RESPONSIVE HABIT CASSETTE RACK
+                 1 Col Mobile | 2 Cols Tablet Portrait (md) | 3 Cols Tablet Landscape (xl)
+            ========================================================== -->
+            <section id="questCassettesGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                <!-- Habit Cassettes Injected via JS -->
+            </section>
+
         </div>
 
-        <!-- MAIN DECK: GRID LAYOUT FOR TABLET -->
-        <main id="deckView">
-            <div class="flex items-center justify-between px-1 mb-3 font-mono text-xs text-slate-400">
-                <span>ACTIVE_QUEST_CASSETTES</span>
-                <span id="activeModuleCountLabel">05 MODS</span>
+        <!-- =========================================================
+             TAB 02: STREAK_MATRIX (7-DAY & 28-DAY HEATMAP + LEADERBOARD)
+        ========================================================== -->
+        <div id="tabViewMatrix" class="hidden space-y-5">
+
+            <!-- Top Summary Cards (4-Col on Tablet) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 font-mono">
+                <div class="hud-chassis p-4 border-l-4 border-l-lime">
+                    <span class="text-[10px] text-slate-400 uppercase">TOTAL_CHECKINS_LOGGED</span>
+                    <div id="matrixTotalLogs" class="font-display text-3xl sm:text-4xl font-extrabold text-lime mt-1">0</div>
+                    <span class="text-[10px] text-slate-500">ALL-TIME SYNC EVENTS</span>
+                </div>
+                <div class="hud-chassis p-4 border-l-4 border-l-cyan">
+                    <span class="text-[10px] text-slate-400 uppercase">7-DAY_FLEET_EFFICIENCY</span>
+                    <div id="matrixWeeklyRate" class="font-display text-3xl sm:text-4xl font-extrabold text-cyan mt-1">0%</div>
+                    <span class="text-[10px] text-slate-500">WEEKLY TARGET RATIO</span>
+                </div>
+                <div class="hud-chassis p-4 border-l-4 border-l-cyberOrange">
+                    <span class="text-[10px] text-slate-400 uppercase">LONGEST_ACTIVE_STREAK</span>
+                    <div id="matrixMaxStreak" class="font-display text-3xl sm:text-4xl font-extrabold text-cyberOrange mt-1">0D</div>
+                    <span class="text-[10px] text-slate-500">CONSECUTIVE DAYS</span>
+                </div>
+                <div class="hud-chassis p-4 border-l-4 border-l-gold">
+                    <span class="text-[10px] text-slate-400 uppercase">HUNTER_CLEARANCE</span>
+                    <div id="matrixRankTitle" class="font-mono text-lg sm:text-xl font-extrabold text-gold mt-2 truncate">[E-RANK]</div>
+                    <span id="matrixTotalXpSub" class="text-[10px] text-slate-500">0 TOTAL XP</span>
+                </div>
             </div>
 
-            <!-- CSS GRID: 1 col on mobile, 2 on portrait tablet (md), 3 on landscape tablet/desktop (lg) -->
-            <div id="questCassettesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <!-- Populated dynamically via JS -->
+            <!-- Two-Column Tablet Split for Matrix Table + Consistency Leaderboard -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <!-- Left 8 Cols: Interactive 7-Day Matrix Table -->
+                <div class="lg:col-span-8 hud-chassis corner-screws p-4 sm:p-5 overflow-x-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-mono text-sm font-extrabold text-white uppercase tracking-wider">
+                                01 // 7-DAY TACTICAL SYNC MATRIX (TAP ANY CELL TO TOGGLE)
+                            </h3>
+                            <p class="font-mono text-[11px] text-slate-400">Direct hardware ledger across your current 7-day window</p>
+                        </div>
+                        <span class="font-mono text-[11px] text-lime">[LIVE_EDIT_ENABLED]</span>
+                    </div>
+                    <div id="sevenDayMatrixTable"></div>
+                </div>
+
+                <!-- Right 4 Cols: Consistency Leaderboard & Category Breakdown -->
+                <div class="lg:col-span-4 hud-chassis corner-screws p-4 sm:p-5 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-mono text-sm font-extrabold text-white uppercase tracking-wider mb-1">
+                            02 // CONSISTENCY LEADERBOARD
+                        </h3>
+                        <p class="font-mono text-[11px] text-slate-400 mb-4">Ranked by 7-day target adherence &amp; streak</p>
+                        <div id="leaderboardContainer" class="space-y-3"></div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-[#22263A]">
+                        <h4 class="font-mono text-xs font-bold text-cyan uppercase mb-2">CATEGORY_TELEMETRY</h4>
+                        <div id="categoryBreakdownList" class="space-y-2 font-mono text-xs"></div>
+                    </div>
+                </div>
             </div>
-        </main>
+
+            <!-- 28-Day Deep History Heatmap Grid -->
+            <div class="hud-chassis corner-screws p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="font-mono text-sm font-extrabold text-white uppercase tracking-wider">
+                            03 // 28-DAY NEURAL HEATMAP ARCHIVE
+                        </h3>
+                        <p class="font-mono text-[11px] text-slate-400">Last 4 weeks of habit execution intensity across all modules</p>
+                    </div>
+                    <div class="flex items-center gap-2 font-mono text-[10px] text-slate-400">
+                        <span>0%</span>
+                        <span class="w-3 h-3 bg-[#141724] border border-slate-700 inline-block"></span>
+                        <span class="w-3 h-3 bg-cyan/40 inline-block"></span>
+                        <span class="w-3 h-3 bg-lime/70 inline-block"></span>
+                        <span class="w-3 h-3 bg-lime shadow-[0_0_8px_#CCFF00] inline-block"></span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                <div id="heatmap28Grid" class="grid grid-cols-7 sm:grid-cols-14 lg:grid-cols-28 gap-2"></div>
+            </div>
+
+        </div>
+
+        <!-- =========================================================
+             TAB 03: SYS_CONFIG (FULL CUSTOMIZATION & DATA MANAGEMENT)
+        ========================================================== -->
+        <div id="tabViewConfig" class="hidden space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+                <!-- Left 7 Cols: Installed Quest Modules Manager -->
+                <div class="lg:col-span-7 hud-chassis corner-screws p-4 sm:p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-[#25293E]">
+                        <div>
+                            <span class="font-mono text-[10px] text-lime uppercase">// QUEST_REGISTRY_MANAGER</span>
+                            <h3 class="font-display text-xl font-extrabold text-white">CUSTOMIZE HABIT MODULES</h3>
+                        </div>
+                        <button onclick="openForgeModal()" class="te-btn px-4 py-2 bg-lime text-obsidian border-white font-mono text-xs font-extrabold uppercase">
+                            [+ CREATE NEW QUEST]
+                        </button>
+                    </div>
+
+                    <div id="configModuleList" class="space-y-3">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Right 5 Cols: Hardware Preferences, Backup & Factory Reset -->
+                <div class="lg:col-span-5 space-y-5 font-mono">
+                    <!-- Display & Synth Settings -->
+                    <div class="hud-chassis corner-screws p-4 sm:p-6">
+                        <span class="text-[10px] text-cyan uppercase">// HARDWARE_PREFERENCES</span>
+                        <h3 class="font-display text-lg font-extrabold text-white mb-4">AUDIO &amp; DISPLAY CONFIG</h3>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="flex items-center justify-between p-3 bg-[#090B11] border border-[#23273E]">
+                                <div>
+                                    <div class="font-bold text-white">CRT SCANLINE OVERLAY</div>
+                                    <div class="text-[11px] text-slate-400">Retro monitor scanline shader</div>
+                                </div>
+                                <button onclick="toggleScanlines()" id="configCrtBtn" class="te-btn px-3 py-1.5 bg-lime text-obsidian font-extrabold">
+                                    ENABLED
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-[#090B11] border border-[#23273E]">
+                                <div>
+                                    <div class="font-bold text-white">WEB_AUDIO SYNTH SFX</div>
+                                    <div class="text-[11px] text-slate-400">Mechanical switch clicks &amp; level-up chords</div>
+                                </div>
+                                <button onclick="toggleAudioSfx()" id="configSfxBtn" class="te-btn px-3 py-1.5 bg-cyan text-obsidian font-extrabold">
+                                    ENABLED
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backup, Restore & Factory Reset -->
+                    <div class="hud-chassis corner-screws p-4 sm:p-6">
+                        <span class="text-[10px] text-gold uppercase">// MEMORY_CORE_STORAGE</span>
+                        <h3 class="font-display text-lg font-extrabold text-white mb-2">BACKUP &amp; SYSTEM RESET</h3>
+                        <p class="text-xs text-slate-400 mb-4">
+                            All habit logs are stored locally in your tablet's persistent <code class="text-lime">localStorage</code>. Export a JSON snapshot anytime.
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <button onclick="exportBackupJson()" class="te-btn py-3 px-3 bg-[#15192B] border-cyan text-cyan font-bold uppercase text-center">
+                                [⬇ EXPORT JSON BACKUP]
+                            </button>
+                            <button onclick="triggerImportJson()" class="te-btn py-3 px-3 bg-[#15192B] border-gold text-gold font-bold uppercase text-center">
+                                [⬆ IMPORT JSON BACKUP]
+                            </button>
+                            <button onclick="loadDemoStreakData()" class="te-btn py-3 px-3 bg-[#15192B] border-lime text-lime font-bold uppercase text-center">
+                                [⚡ SIMULATE HIGH STREAK]
+                            </button>
+                            <button onclick="openResetConfirmModal()" class="te-btn py-3 px-3 bg-magenta/20 border-magenta text-magenta font-extrabold uppercase text-center">
+                                [⚠ FACTORY RESET DATA]
+                            </button>
+                        </div>
+                        <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="handleImportJsonFile(event)">
+                    </div>
+                </div>
+
+            </div>
+        </div>
 
     </div>
 
-    <!-- THUMB-ZONE FLOATING HARDWARE DOCK (CENTERED ON TABLET) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-1 pointer-events-none flex justify-center">
-        <div class="w-full max-w-lg bg-[#0B0C13]/95 backdrop-blur-md border-2 border-[#2D324D] shadow-[0_8px_30px_rgba(0,0,0,0.85)] p-2 pointer-events-auto">
-            <div class="grid grid-cols-2 gap-2 font-mono">
-                <button onclick="openForgeModal()"
-                    class="te-btn py-3 px-2 flex flex-col items-center justify-center bg-cyberOrange text-obsidian border-white font-extrabold text-sm">
-                    <span class="tracking-tight">[+ DEPLOY_NEW_MODULE]</span>
+    <!-- =========================================================
+         BOTTOM / TABLET FLOATING COMMAND DOCK (3-TAB NAVIGATION)
+    ========================================================== -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 px-3 pb-3 pt-1 pointer-events-none flex justify-center">
+        <div class="w-full max-w-2xl bg-[#0A0B12]/95 backdrop-blur-md border-2 border-[#2E3452] shadow-[0_10px_35px_rgba(0,0,0,0.9)] p-1.5 pointer-events-auto">
+            <div class="grid grid-cols-3 gap-2 font-mono text-xs">
+                <button onclick="switchMainTab('DECK')" id="navTabDeck"
+                    class="te-btn py-2.5 px-2 flex items-center justify-center gap-2 bg-lime text-obsidian border-white font-extrabold">
+                    <span>01 // COMMAND_DECK</span>
                 </button>
-                <button onclick="toggleAudioSfx()" id="dockBtnSfx"
-                    class="te-btn py-3 px-2 flex flex-col items-center justify-center bg-[#141726] text-cyan border-cyan/50 font-bold text-sm">
-                    <span id="dockSfxLabel" class="tracking-tight">[SFX: ON]</span>
+                <button onclick="switchMainTab('MATRIX')" id="navTabMatrix"
+                    class="te-btn py-2.5 px-2 flex items-center justify-center gap-2 bg-[#131624] text-slate-300 border-[#2B304A] font-bold">
+                    <span>02 // STREAK_MATRIX</span>
+                </button>
+                <button onclick="switchMainTab('CONFIG')" id="navTabConfig"
+                    class="te-btn py-2.5 px-2 flex items-center justify-center gap-2 bg-[#131624] text-slate-300 border-[#2B304A] font-bold">
+                    <span>03 // SYS_CONFIG</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- FORGE MODAL (Hidden by default) -->
-    <div id="forgeModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="w-full max-w-lg hud-chassis-lime bg-[#0B0C14] p-6 animate-pop">
-            <div class="flex items-center justify-between pb-4 mb-5 border-b border-[#25293E] font-mono">
+    <!-- =========================================================
+         FULL CUSTOMIZATION MODAL (CREATE / EDIT HABIT CASSETTE)
+    ========================================================== -->
+    <div id="forgeModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-xl hud-chassis-active bg-[#0B0D16] p-5 sm:p-6 animate-pop my-auto">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#25293E] font-mono">
                 <div>
-                    <span class="text-xs text-lime block">// MODULE_FABRICATOR_V2</span>
-                    <h3 id="forgeModalTitle" class="font-display text-xl font-extrabold text-white">FORGE NEW QUEST</h3>
+                    <span class="text-[10px] text-lime uppercase">// HARDWARE_CASSETTE_FABRICATOR</span>
+                    <h3 id="forgeModalTitle" class="font-display text-xl sm:text-2xl font-extrabold text-white">FORGE NEW QUEST MODULE</h3>
                 </div>
-                <button onclick="closeForgeModal()" class="te-btn px-3 py-1.5 bg-[#171A29] text-slate-300 text-sm font-mono">
+                <button onclick="closeForgeModal()" class="te-btn px-3 py-1 bg-[#171B2C] text-slate-300 hover:text-white text-xs font-mono">
                     [ESC]
                 </button>
             </div>
-            <!-- Same form logic as before -->
-            <form id="forgeForm" onsubmit="saveHabitModule(event)" class="space-y-4 font-mono">
+
+            <form id="forgeForm" onsubmit="saveHabitModule(event)" class="space-y-4 font-mono text-xs">
                 <input type="hidden" id="forgeHabitId" value="">
-                <div>
-                    <label class="block text-xs text-slate-400 uppercase mb-1">QUEST_DESIGNATION</label>
-                    <input type="text" id="forgeNameInput" required maxlength="38" placeholder="e.g., Rust / Linux Kernel Lab"
-                        class="w-full px-4 py-3 bg-[#07080D] border border-[#2C314A] text-white text-sm focus:outline-none focus:border-lime">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 uppercase mb-1">PROTOCOL_SPEC</label>
-                    <input type="text" id="forgeSpecInput" maxlength="44" placeholder="e.g., 90m zero-phone execution block"
-                        class="w-full px-4 py-3 bg-[#07080D] border border-[#2C314A] text-white text-sm focus:outline-none focus:border-lime">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
+
+                <!-- Title & Subtitle -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-slate-400 uppercase mb-1">CATEGORY_TAG</label>
-                        <select id="forgeCategoryInput" class="w-full px-4 py-3 bg-[#07080D] border border-[#2C314A] text-white text-sm focus:outline-none focus:border-lime">
-                            <option value="CORE_CODE">[CORE_CODE]</option>
-                            <option value="BIOS_FIT">[BIOS_FIT]</option>
-                            <option value="GIT_OPS">[GIT_OPS]</option>
-                            <option value="ACAD_LAB">[ACAD_LAB]</option>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">QUEST_TITLE *</label>
+                        <input type="text" id="forgeNameInput" required maxlength="42" placeholder="e.g., C / DSA Problem Solving"
+                            class="w-full px-3.5 py-2.5 bg-[#06070C] border border-[#2C324E] text-white text-xs focus:outline-none focus:border-lime">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">PROTOCOL_SPEC (SUBTITLE)</label>
+                        <input type="text" id="forgeSpecInput" maxlength="55" placeholder="e.g., 2 LeetCode / Codeforces problems"
+                            class="w-full px-3.5 py-2.5 bg-[#06070C] border border-[#2C324E] text-white text-xs focus:outline-none focus:border-lime">
+                    </div>
+                </div>
+
+                <!-- Category, XP Value & Weekly Target Days -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">SYSTEM_CATEGORY</label>
+                        <select id="forgeCategoryInput" class="w-full px-3 py-2.5 bg-[#06070C] border border-[#2C324E] text-white text-xs focus:outline-none focus:border-lime">
+                            <option value="CORE_DEV">CORE_DEV</option>
+                            <option value="FITNESS">FITNESS</option>
+                            <option value="ACADEMIC">ACADEMIC</option>
+                            <option value="SYSTEM">SYSTEM</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-400 uppercase mb-1">XP_BOUNTY</label>
-                        <select id="forgeXpInput" class="w-full px-4 py-3 bg-[#07080D] border border-[#2C314A] text-lime font-bold text-sm focus:outline-none focus:border-lime">
-                            <option value="50">+50 XP [STD]</option>
-                            <option value="70">+70 XP [HIGH]</option>
-                            <option value="100">+100 XP [ULTRA]</option>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">XP_BOUNTY</label>
+                        <select id="forgeXpInput" class="w-full px-3 py-2.5 bg-[#06070C] border border-[#2C324E] text-lime font-bold text-xs focus:outline-none focus:border-lime">
+                            <option value="25">+25 XP [LIGHT]</option>
+                            <option value="50" selected>+50 XP [STANDARD]</option>
+                            <option value="75">+75 XP [HEAVY]</option>
+                            <option value="100">+100 XP [BOSS_TIER]</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">TARGET_DAYS / WEEK</label>
+                        <select id="forgeTargetInput" class="w-full px-3 py-2.5 bg-[#06070C] border border-[#2C324E] text-cyan font-bold text-xs focus:outline-none focus:border-lime">
+                            <option value="3">3 DAYS / WK</option>
+                            <option value="4">4 DAYS / WK</option>
+                            <option value="5">5 DAYS / WK</option>
+                            <option value="6">6 DAYS / WK</option>
+                            <option value="7" selected>7 DAYS / WK (DAILY)</option>
                         </select>
                     </div>
                 </div>
-                <div class="pt-4 flex items-center gap-3">
-                    <button type="button" id="deleteModBtn" onclick="deleteCurrentModule()" class="hidden te-btn px-4 py-3.5 bg-cyberOrange/20 border-cyberOrange text-cyberOrange text-sm font-extrabold uppercase">SCRAP</button>
-                    <button type="submit" class="flex-1 te-btn py-3.5 bg-lime text-obsidian border-white text-sm font-extrabold uppercase tracking-wider">COMPILE &amp; DEPLOY &gt;&gt;</button>
+
+                <!-- Custom Icon Selector -->
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1.5">SELECT_MODULE_GLYPH</label>
+                    <div id="glyphPickerGrid" class="grid grid-cols-8 sm:grid-cols-10 gap-1.5">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Accent Neon Color Selector -->
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1.5">NEON_CIRCUIT_ACCENT</label>
+                    <div id="colorPickerGrid" class="grid grid-cols-5 gap-2">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-3 border-t border-[#23273E] flex items-center justify-between gap-3">
+                    <button type="button" id="deleteQuestModalBtn" onclick="deleteQuestFromModal()"
+                        class="hidden te-btn px-4 py-3 bg-magenta/20 border-magenta text-magenta font-extrabold uppercase">
+                        [SCRAP MODULE]
+                    </button>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button type="button" onclick="closeForgeModal()" class="te-btn px-4 py-3 bg-[#151828] text-slate-300 font-bold uppercase">
+                            CANCEL
+                        </button>
+                        <button type="submit" class="te-btn px-6 py-3 bg-lime text-obsidian border-white font-extrabold uppercase tracking-wider">
+                            COMPILE &amp; DEPLOY &gt;&gt;
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- HUD TOAST -->
-    <div id="hudToast" class="fixed top-12 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-[#0E101A] border-2 border-lime text-lime font-mono text-sm font-extrabold shadow-[4px_4px_0px_#000] transition-all duration-200 opacity-0 pointer-events-none -translate-y-3 flex items-center gap-3">
-        <span id="hudToastPrefix">[SYS.OK]</span>
-        <span id="hudToastMsg" class="text-white">QUEST SYNCED // +80 XP</span>
+    <!-- =========================================================
+         FACTORY RESET CONFIRMATION MODAL (NO NATIVE ALERT)
+    ========================================================== -->
+    <div id="resetConfirmModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="w-full max-w-md hud-chassis border-2 border-magenta bg-[#0D0E17] p-6 font-mono animate-pop">
+            <div class="text-magenta text-xs font-extrabold uppercase tracking-widest mb-1">// CRITICAL_SYSTEM_WARNING</div>
+            <h3 class="font-display text-xl font-extrabold text-white mb-2">PURGE ALL HABIT DATA?</h3>
+            <p class="text-xs text-slate-300 mb-5">
+                This will wipe your current streaks and restore the 5 default Student/Developer modules.
+            </p>
+            <div class="flex items-center justify-end gap-3 text-xs">
+                <button onclick="closeResetConfirmModal()" class="te-btn px-4 py-2.5 bg-[#171A2A] text-slate-300 font-bold">
+                    [ABORT]
+                </button>
+                <button onclick="executeFactoryReset()" class="te-btn px-4 py-2.5 bg-magenta text-white border-white font-extrabold">
+                    [CONFIRM PURGE]
+                </button>
+            </div>
+        </div>
     </div>
 
+    <!-- HUD NOTIFICATION TOAST -->
+    <div id="hudToast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-[#0E101B] border-2 border-lime text-lime font-mono text-xs font-extrabold shadow-[5px_5px_0px_#000] transition-all duration-200 opacity-0 pointer-events-none -translate-y-3 flex items-center gap-2.5">
+        <span id="hudToastTag" class="px-1.5 py-0.5 bg-lime text-obsidian">[SYS.OK]</span>
+        <span id="hudToastText" class="text-white">MODULE SYNCED // +50 XP</span>
+    </div>
+
+    <!-- =========================================================
+         MAIN APPLICATION ENGINE
+    ========================================================== -->
     <script>
-        // Constants & Data
-        const STORAGE_KEY = 'cyber_habit_hud_tablet_v1';
+        const STORAGE_KEY = 'sys_habit_v26_full_state';
         const XP_PER_LEVEL = 250;
-        const NEON_CORES = {
-            lime: { hex: '#CCFF00', badgeBg: 'bg-[#CCFF00]/15', badgeText: 'text-[#CCFF00]', border: 'border-[#CCFF00]', btnOn: 'bg-[#CCFF00] text-[#08080C] border-white shadow-[0_0_16px_rgba(204,255,0,0.45)]' },
-            cyan: { hex: '#00F0FF', badgeBg: 'bg-[#00F0FF]/15', badgeText: 'text-[#00F0FF]', border: 'border-[#00F0FF]', btnOn: 'bg-[#00F0FF] text-[#08080C] border-white shadow-[0_0_16px_rgba(0,240,255,0.45)]' },
-            orange: { hex: '#FF4D00', badgeBg: 'bg-[#FF4D00]/15', badgeText: 'text-[#FF4D00]', border: 'border-[#FF4D00]', btnOn: 'bg-[#FF4D00] text-[#08080C] border-white shadow-[0_0_16px_rgba(255,77,0,0.45)]' },
-            violet: { hex: '#9D4EDD', badgeBg: 'bg-[#9D4EDD]/20', badgeText: 'text-[#C77DFF]', border: 'border-[#9D4EDD]', btnOn: 'bg-[#9D4EDD] text-white border-white shadow-[0_0_16px_rgba(157,78,221,0.5)]' }
+
+        // Available Icons & Neon Palettes
+        const GLYPH_OPTIONS = ['⚡', '💻', '🏃', '📚', '🛰️', '🧠', '🔥', '🛠️', '🎯', '🏋️', '🧬', '🛡️', '🚀', '☕', '🎹', '🕹️', '📐', '🧪', '🔋', '🌐'];
+
+        const NEON_PALETTES = {
+            lime: {
+                key: 'lime', label: 'ACID_LIME', hex: '#CCFF00',
+                badge: 'bg-[#CCFF00]/15 text-[#CCFF00] border-[#CCFF00]/40',
+                triggerOn: 'bg-[#CCFF00] text-[#08080C] border-white shadow-[0_4px_0_#597000,0_0_16px_rgba(204,255,0,0.45)]',
+                pillOn: 'bg-[#CCFF00] text-[#08080C] border-white shadow-[0_0_8px_rgba(204,255,0,0.6)]'
+            },
+            cyan: {
+                key: 'cyan', label: 'ELEC_CYAN', hex: '#00F0FF',
+                badge: 'bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF]/40',
+                triggerOn: 'bg-[#00F0FF] text-[#08080C] border-white shadow-[0_4px_0_#006670,0_0_16px_rgba(0,240,255,0.45)]',
+                pillOn: 'bg-[#00F0FF] text-[#08080C] border-white shadow-[0_0_8px_rgba(0,240,255,0.6)]'
+            },
+            orange: {
+                key: 'orange', label: 'CYBER_ORG', hex: '#FF4D00',
+                badge: 'bg-[#FF4D00]/15 text-[#FF4D00] border-[#FF4D00]/40',
+                triggerOn: 'bg-[#FF4D00] text-[#08080C] border-white shadow-[0_4px_0_#7A2400,0_0_16px_rgba(255,77,0,0.45)]',
+                pillOn: 'bg-[#FF4D00] text-[#08080C] border-white shadow-[0_0_8px_rgba(255,77,0,0.6)]'
+            },
+            magenta: {
+                key: 'magenta', label: 'NEON_MAG', hex: '#FF0055',
+                badge: 'bg-[#FF0055]/15 text-[#FF0055] border-[#FF0055]/40',
+                triggerOn: 'bg-[#FF0055] text-white border-white shadow-[0_4px_0_#750027,0_0_16px_rgba(255,0,85,0.45)]',
+                pillOn: 'bg-[#FF0055] text-white border-white shadow-[0_0_8px_rgba(255,0,85,0.6)]'
+            },
+            gold: {
+                key: 'gold', label: 'SOLAR_GOLD', hex: '#FFB800',
+                badge: 'bg-[#FFB800]/15 text-[#FFB800] border-[#FFB800]/40',
+                triggerOn: 'bg-[#FFB800] text-[#08080C] border-white shadow-[0_4px_0_#785600,0_0_16px_rgba(255,184,0,0.45)]',
+                pillOn: 'bg-[#FFB800] text-[#08080C] border-white shadow-[0_0_8px_rgba(255,184,0,0.6)]'
+            }
         };
 
         const HUNTER_RANKS = [
             { minLvl: 1, title: '[E-RANK INITIATE]' },
-            { minLvl: 3, title: '[C-RANK COMPILER]' },
-            { minLvl: 6, title: '[A-RANK SYS-LORD]' },
-            { minLvl: 10, title: '[S-RANK ARCHITECT]' }
+            { minLvl: 2, title: '[D-RANK CODER]' },
+            { minLvl: 4, title: '[C-RANK VANGUARD]' },
+            { minLvl: 6, title: '[B-RANK STRIKER]' },
+            { minLvl: 9, title: '[A-RANK COMMANDER]' },
+            { minLvl: 12, title: '[S-RANK ARCHITECT]' }
         ];
 
+        // State Variables
         let quests = [];
-        let activeCategory = 'ALL';
+        let activeFilter = 'ALL';
+        let activeTab = 'DECK';
+        let weekOffset = 0; // 0 = current 7-day window, -1 = previous 7 days
         let sfxEnabled = true;
         let scanlinesEnabled = true;
-        
-        function toDateKey(d) {
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        let selectedGlyph = '⚡';
+        let selectedNeon = 'lime';
+
+        // Date Formatting Helper
+        function toDateKey(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
         }
+
         const todayKey = toDateKey(new Date());
         let selectedDateKey = todayKey;
 
-        // Core Data Functions
-        function getFactoryQuests() {
-            const h = (days) => {
-                let r = {};
-                days.forEach(ago => { let d = new Date(); d.setDate(d.getDate() - ago); r[toDateKey(d)] = true; });
-                return r;
+        // =========================================================
+        // WEB AUDIO MECHANICAL SYNTH ENGINE
+        // =========================================================
+        let audioCtx = null;
+        function playSynthSfx(type = 'toggleOn') {
+            if (!sfxEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+
+                if (type === 'toggleOn') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.09);
+                    gain.gain.setValueAtTime(0.16, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.11);
+                } else if (type === 'toggleOff') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(260, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.08);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.09);
+                } else if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(520, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.035);
+                } else if (type === 'levelUp') {
+                    [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.055);
+                        gain.gain.setValueAtTime(0.12, now + idx * 0.055);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.22);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.055);
+                        osc.stop(now + idx * 0.055 + 0.22);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        // =========================================================
+        // COORDINATE SPARK PARTICLE BURST ENGINE
+        // =========================================================
+        const sparkCanvas = document.getElementById('sparkCanvas');
+        const sCtx = sparkCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeSparkCanvas() {
+            sparkCanvas.width = window.innerWidth;
+            sparkCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeSparkCanvas);
+        resizeSparkCanvas();
+
+        function spawnSparkBurst(x, y, hexColor = '#CCFF00') {
+            for (let i = 0; i < 22; i++) {
+                const angle = (Math.PI * 2 * i) / 22 + (Math.random() - 0.5) * 0.4;
+                const speed = 2.5 + Math.random() * 6.5;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1.2,
+                    size: 2 + Math.random() * 3.5,
+                    alpha: 1,
+                    color: hexColor
+                });
+            }
+        }
+
+        function updateParticles() {
+            sCtx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.18; // gravity
+                p.alpha -= 0.028;
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                sCtx.save();
+                sCtx.globalAlpha = p.alpha;
+                sCtx.fillStyle = p.color;
+                sCtx.shadowColor = p.color;
+                sCtx.shadowBlur = 8;
+                sCtx.fillRect(p.x, p.y, p.size, p.size);
+                sCtx.restore();
+            }
+            requestAnimationFrame(updateParticles);
+        }
+        requestAnimationFrame(updateParticles);
+
+        // =========================================================
+        // DEFAULT PRE-POPULATED STUDENT / DEVELOPER HABIT MODULES
+        // =========================================================
+        function buildDefaultQuests() {
+            const makeHistory = (daysAgoArray) => {
+                const map = {};
+                daysAgoArray.forEach(ago => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - ago);
+                    map[toDateKey(d)] = true;
+                });
+                return map;
             };
+
             return [
-                { id: 'm1', name: 'System Architecture', spec: 'Deep dive 90m focus session', category: 'CORE_CODE', xp: 80, glyph: '💻', neon: 'lime', logs: h([0,1,2]) },
-                { id: 'm2', name: 'Physical Conditioning', spec: 'Morning mobility / heavy lift', category: 'BIOS_FIT', xp: 60, glyph: '🏃', neon: 'cyan', logs: h([0,2,3]) },
-                { id: 'm3', name: 'Code Deployment', spec: 'Push commits to production', category: 'GIT_OPS', xp: 70, glyph: '🛰️', neon: 'orange', logs: h([1,2,4]) }
+                {
+                    id: 'q_dsa',
+                    name: 'C / DSA Problem Solving',
+                    spec: 'Solve 2 algorithmic problems + dry-run complexity',
+                    category: 'CORE_DEV',
+                    xp: 75,
+                    targetDays: 7,
+                    glyph: '💻',
+                    neon: 'lime',
+                    logs: makeHistory([0, 1, 2, 3, 5, 6, 7, 8])
+                },
+                {
+                    id: 'q_run',
+                    name: 'Morning Run & Mobility',
+                    spec: '3km outdoor pace + 10m thoracic & hip mobility',
+                    category: 'FITNESS',
+                    xp: 50,
+                    targetDays: 5,
+                    glyph: '🏃',
+                    neon: 'cyan',
+                    logs: makeHistory([0, 1, 3, 4, 6, 9])
+                },
+                {
+                    id: 'q_acad',
+                    name: 'College Assignments & Lab',
+                    spec: 'Zero backlog execution on core coursework & records',
+                    category: 'ACADEMIC',
+                    xp: 50,
+                    targetDays: 6,
+                    glyph: '📐',
+                    neon: 'orange',
+                    logs: makeHistory([1, 2, 3, 4, 5, 8])
+                },
+                {
+                    id: 'q_read',
+                    name: 'Tech Reading & Clean Notes',
+                    spec: '30m systems book / documentation + atomic summary',
+                    category: 'SYSTEM',
+                    xp: 50,
+                    targetDays: 6,
+                    glyph: '📚',
+                    neon: 'gold',
+                    logs: makeHistory([0, 2, 3, 5, 6, 7])
+                },
+                {
+                    id: 'q_git',
+                    name: 'GitHub Commit / Side Project',
+                    spec: 'Ship at least 1 meaningful commit to main repo',
+                    category: 'CORE_DEV',
+                    xp: 100,
+                    targetDays: 6,
+                    glyph: '🛰️',
+                    neon: 'magenta',
+                    logs: makeHistory([0, 1, 2, 4, 5, 6, 7, 10])
+                }
             ];
         }
 
-        function loadSystemState() {
+        function loadState() {
             try {
-                let raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) { quests = JSON.parse(raw); return; }
-            } catch(e) {}
-            quests = getFactoryQuests();
-            saveSystemState();
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed.quests) && parsed.quests.length > 0) {
+                        quests = parsed.quests;
+                        sfxEnabled = parsed.sfxEnabled ?? true;
+                        scanlinesEnabled = parsed.scanlinesEnabled ?? true;
+                        return;
+                    }
+                }
+            } catch (e) {}
+            quests = buildDefaultQuests();
+            saveState();
         }
 
-        function saveSystemState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(quests)); }
-
-        function calculateStreak(quest) {
-            let s = 0; let d = new Date(); d.setHours(0,0,0,0);
-            if (!quest.logs[toDateKey(d)]) d.setDate(d.getDate() - 1);
-            while (quest.logs[toDateKey(d)]) { s++; d.setDate(d.getDate() - 1); }
-            return s;
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    quests,
+                    sfxEnabled,
+                    scanlinesEnabled
+                }));
+            } catch (e) {}
         }
 
-        function getStats() {
-            let totalXp = 0, maxStreak = 0;
+        // =========================================================
+        // STREAK & RPG LEVEL CALCULATIONS
+        // =========================================================
+        function calculateCurrentStreak(quest) {
+            let streak = 0;
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            if (!quest.logs[toDateKey(d)]) {
+                d.setDate(d.getDate() - 1);
+            }
+            while (quest.logs[toDateKey(d)]) {
+                streak++;
+                d.setDate(d.getDate() - 1);
+            }
+            return streak;
+        }
+
+        function calculateBestStreak(quest) {
+            const keys = Object.keys(quest.logs).filter(k => quest.logs[k]).sort();
+            if (keys.length === 0) return 0;
+            let best = 1, current = 1;
+            for (let i = 1; i < keys.length; i++) {
+                const prev = new Date(keys[i - 1] + 'T00:00:00');
+                const curr = new Date(keys[i] + 'T00:00:00');
+                const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    current++;
+                    if (current > best) best = current;
+                } else if (diffDays > 1) {
+                    current = 1;
+                }
+            }
+            return Math.max(best, calculateCurrentStreak(quest));
+        }
+
+        function getPlayerTelemetry() {
+            let totalXp = 0;
+            let maxStreak = 0;
+            let totalLogsCount = 0;
+
             quests.forEach(q => {
-                totalXp += Object.keys(q.logs).length * q.xp;
-                let s = calculateStreak(q);
+                const count = Object.keys(q.logs).filter(k => q.logs[k]).length;
+                totalLogsCount += count;
+                totalXp += count * (Number(q.xp) || 50);
+                const s = calculateCurrentStreak(q);
                 if (s > maxStreak) maxStreak = s;
             });
-            let lvl = Math.floor(totalXp / XP_PER_LEVEL) + 1;
-            let rank = HUNTER_RANKS.reverse().find(r => lvl >= r.minLvl)?.title || HUNTER_RANKS[0].title;
-            return { totalXp, lvl, currXp: totalXp % XP_PER_LEVEL, rank, maxStreak };
+
+            const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
+            const currentLevelXp = totalXp % XP_PER_LEVEL;
+            const rankObj = [...HUNTER_RANKS].reverse().find(r => level >= r.minLvl) || HUNTER_RANKS[0];
+
+            return {
+                totalXp,
+                level,
+                currentLevelXp,
+                xpToNext: XP_PER_LEVEL - currentLevelXp,
+                rankTitle: rankObj.title,
+                maxStreak,
+                totalLogsCount
+            };
         }
 
-        function get7DayWindow() {
-            let list = []; let now = new Date(); now.setHours(0,0,0,0);
+        function get7DayChronoWindow() {
+            const days = [];
+            const base = new Date();
+            base.setHours(0, 0, 0, 0);
+            base.setDate(base.getDate() + weekOffset * 7);
+
             for (let i = 6; i >= 0; i--) {
-                let d = new Date(now); d.setDate(now.getDate() - i);
-                list.push({
-                    key: toDateKey(d),
-                    short: d.toLocaleDateString('en-US', {weekday:'short'}).toUpperCase(),
-                    num: String(d.getDate()).padStart(2, '0'),
-                    isToday: i===0
+                const d = new Date(base);
+                d.setDate(base.getDate() - i);
+                const key = toDateKey(d);
+                days.push({
+                    key,
+                    shortDay: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    dayNum: String(d.getDate()).padStart(2, '0'),
+                    monthShort: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+                    fullLabel: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase(),
+                    isToday: key === todayKey
                 });
             }
-            return list;
+            return days;
         }
 
-        // Render Functions
-        function renderHud() {
-            const chrono = get7DayWindow();
-            const stats = getStats();
-            
-            // Header
-            document.getElementById('playerLevelNum').textContent = String(stats.lvl).padStart(2,'0');
-            document.getElementById('xpCounterText').textContent = `${String(stats.currXp).padStart(3,'0')} / ${XP_PER_LEVEL} XP`;
-            document.getElementById('rankBadge').textContent = stats.rank;
-            document.getElementById('totalStreakTop').textContent = `⚡ MAX: ${stats.maxStreak}D`;
+        // =========================================================
+        // MASTER RENDER FUNCTION
+        // =========================================================
+        function renderAll() {
+            const chrono = get7DayChronoWindow();
+            const stats = getPlayerTelemetry();
 
-            // Segment Bar
-            const segs = 14; const lit = Math.round((stats.currXp/XP_PER_LEVEL)*segs);
-            document.getElementById('xpSegmentedBar').innerHTML = Array.from({length:segs}).map((_,i) => 
-                `<div class="flex-1 h-full ${i<lit ? 'bg-lime shadow-[0_0_6px_#CCFF00]' : 'bg-[#171A29]'}"></div>`
-            ).join('');
+            // 1. Update Top HUD Level, Rank & 14-Segment Capacitor
+            document.getElementById('playerLevelNum').textContent = String(stats.level).padStart(2, '0');
+            document.getElementById('xpCurrentNum').textContent = String(stats.currentLevelXp).padStart(3, '0');
+            document.getElementById('xpNextLevelNum').textContent = XP_PER_LEVEL;
+            document.getElementById('rankBadge').textContent = stats.rankTitle;
+            document.getElementById('totalXpReadout').textContent = `TOTAL: ${stats.totalXp} XP`;
+            document.getElementById('bestStreakReadout').textContent = `🔥 MAX STREAK: ${stats.maxStreak}D`;
+            document.getElementById('xpToNextLabel').textContent = `${stats.xpToNext} XP TO LVL.${String(stats.level + 1).padStart(2, '0')}`;
 
-            // Reactor
-            const done = quests.filter(q => q.logs[selectedDateKey]).length;
-            const pct = quests.length ? Math.round((done/quests.length)*100) : 0;
-            const dash = 169.6 - (pct/100)*169.6;
-            document.getElementById('reactorGaugeCircle').style.strokeDashoffset = dash;
-            document.getElementById('reactorGaugeCircle').style.stroke = pct === 100 ? '#00F0FF' : '#CCFF00';
-            document.getElementById('dailySyncPercent').textContent = pct+'%';
-            document.getElementById('dailySyncFraction').textContent = `${done}/${quests.length}`;
+            const litSegments = Math.round((stats.currentLevelXp / XP_PER_LEVEL) * 14);
+            document.getElementById('xpCapacitorBar').innerHTML = Array.from({ length: 14 }).map((_, i) => `
+                <div class="h-full transition-all duration-300 ${i < litSegments ? 'bg-lime shadow-[0_0_8px_#CCFF00]' : 'bg-[#151828]'}"></div>
+            `).join('');
 
-            // Chrono Strip
-            document.getElementById('chronoStripGrid').innerHTML = chrono.map(day => {
-                const isSel = day.key === selectedDateKey;
-                const dC = quests.filter(q => q.logs[day.key]).length;
-                const r = quests.length ? (dC/quests.length) : 0;
+            // 2. Update Circular Reactor Sync Gauge for Selected Date
+            const totalQuests = quests.length;
+            const completedOnSelected = quests.filter(q => q.logs[selectedDateKey]).length;
+            const syncPct = totalQuests > 0 ? Math.round((completedOnSelected / totalQuests) * 100) : 0;
+            const circumference = 182.2;
+            const offset = circumference - (syncPct / 100) * circumference;
+
+            const circle = document.getElementById('reactorGaugeCircle');
+            circle.style.strokeDashoffset = offset;
+            circle.style.stroke = syncPct === 100 ? '#00F0FF' : (syncPct >= 50 ? '#CCFF00' : '#FF4D00');
+            document.getElementById('dailySyncPercent').textContent = `${syncPct}%`;
+            document.getElementById('dailySyncFraction').textContent = `${completedOnSelected}/${totalQuests}`;
+            document.getElementById('reactorStatusText').textContent =
+                syncPct === 100 ? 'OVERDRIVE_100%' : (syncPct > 0 ? 'SYNC_ACTIVE' : 'STANDBY');
+
+            // 3. Time-Travel Indicators
+            const isTodaySelected = selectedDateKey === todayKey;
+            document.getElementById('timeTravelBadge').classList.toggle('hidden', isTodaySelected);
+            document.getElementById('returnTodayBtn').classList.toggle('hidden', isTodaySelected && weekOffset === 0);
+
+            const selectedDayObj = chrono.find(d => d.key === selectedDateKey);
+            const bannerText = selectedDayObj
+                ? `${selectedDayObj.fullLabel} // ${selectedDayObj.isToday ? 'TODAY [LIVE]' : 'HISTORICAL_LOG'}`
+                : `${selectedDateKey} // HISTORICAL_LOG`;
+            document.getElementById('selectedDateBanner').textContent = bannerText;
+
+            const nextWeekBtn = document.getElementById('nextWeekBtn');
+            nextWeekBtn.disabled = weekOffset >= 0;
+            nextWeekBtn.classList.toggle('opacity-40', weekOffset >= 0);
+
+            // 4. Render Equalizer Power-Core Telemetry & Glowing Spline Wave
+            renderEqualizerAndSpline(chrono);
+
+            // 5. Render 7-Day Chrono Selector Strip
+            renderChronoStrip(chrono);
+
+            // 6. Render Category Filter Switches
+            renderCategoryFilterBar();
+
+            // 7. Render Habit Cassette Grid
+            renderQuestCassettes(chrono);
+
+            // 8. If Matrix or Config tabs are open, keep them live
+            renderMatrixTab(chrono, stats);
+            renderConfigTab();
+        }
+
+        // =========================================================
+        // EQUALIZER POWER-CORE + SVG SPLINE WAVE
+        // =========================================================
+        function renderEqualizerAndSpline(chrono) {
+            const totalQuests = Math.max(quests.length, 1);
+            let weeklySumPct = 0;
+            const points = [];
+
+            const colsHtml = chrono.map((day, idx) => {
+                const doneCount = quests.filter(q => q.logs[day.key]).length;
+                const pct = Math.round((doneCount / totalQuests) * 100);
+                weeklySumPct += pct;
+                const isSelected = day.key === selectedDateKey;
+
+                // 8 LED Segments per Equalizer bar
+                const totalSegs = 8;
+                const litSegs = Math.round((pct / 100) * totalSegs);
+
+                // Calculate SVG Spline coordinate
+                const xCoord = (idx * 100) + 50;
+                const yCoord = 130 - (pct / 100) * 110;
+                points.push({ x: xCoord, y: yCoord, pct, isSelected });
+
+                const segHtml = Array.from({ length: totalSegs }).map((_, sIdx) => {
+                    const segNumber = totalSegs - sIdx; // top to bottom
+                    const isLit = segNumber <= litSegs;
+                    let colorClass = 'bg-[#151828]';
+                    if (isLit) {
+                        if (pct === 100) colorClass = 'bg-cyan shadow-[0_0_8px_#00F0FF]';
+                        else if (segNumber > 6) colorClass = 'bg-lime shadow-[0_0_6px_#CCFF00]';
+                        else if (segNumber > 3) colorClass = 'bg-lime/85';
+                        else colorClass = 'bg-cyberOrange/90';
+                    }
+                    return `<div class="w-full h-2.5 transition-all duration-300 ${colorClass}"></div>`;
+                }).join('');
+
                 return `
-                    <button onclick="selectDate('${day.key}')" class="te-btn py-2 md:py-3 px-1 md:px-2 flex flex-col items-center justify-between font-mono transition ${isSel ? 'bg-[#1A1F33] border-lime text-white shadow-[0_0_12px_rgba(204,255,0,0.25)]' : 'bg-[#0C0E17] border-[#22263A] text-slate-400 hover:text-white'}">
-                        <span class="text-[10px] md:text-xs font-bold ${isSel?'text-lime':''}">${day.short}</span>
-                        <span class="text-base md:text-lg font-extrabold my-1 ${isSel?'text-white':''}">${day.num}</span>
-                        <div class="w-full h-1 bg-[#171A29] flex mt-1">
-                            <div class="h-full bg-cyan transition-all" style="width:${r*100}%"></div>
+                    <button onclick="selectDate('${day.key}')"
+                        class="group h-full flex flex-col items-center justify-end p-1.5 border transition ${
+                            isSelected
+                                ? 'bg-[#151A2C] border-lime shadow-[0_0_12px_rgba(204,255,0,0.2)]'
+                                : 'bg-[#0C0E18]/70 border-[#1E2236] hover:border-cyan/60'
+                        }">
+                        <span class="font-mono text-[10px] font-bold ${isSelected ? 'text-lime' : 'text-slate-400'} mb-1">${pct}%</span>
+                        <div class="w-full flex-1 flex flex-col justify-end gap-1 px-1">
+                            ${segHtml}
+                        </div>
+                        <div class="mt-2 pt-1 border-t border-[#22263A] w-full text-center font-mono">
+                            <div class="text-[10px] font-extrabold ${isSelected ? 'text-white' : 'text-slate-400'}">${day.shortDay}</div>
+                            <div class="text-[9px] ${day.isToday ? 'text-cyan font-bold' : 'text-slate-500'}">${day.isToday ? 'LIVE' : day.dayNum}</div>
                         </div>
                     </button>
                 `;
             }).join('');
 
-            // Cassettes (CSS Grid layout allows them to fill the 2/3 columns automatically)
-            const filtered = activeCategory === 'ALL' ? quests : quests.filter(q => q.category === activeCategory);
-            document.getElementById('activeModuleCountLabel').textContent = `${String(filtered.length).padStart(2,'0')} DEPLOYED`;
-            
-            document.getElementById('questCassettesContainer').innerHTML = filtered.map((q, idx) => {
-                const core = NEON_CORES[q.neon] || NEON_CORES.lime;
-                const hitToday = !!q.logs[selectedDateKey];
-                const streak = calculateStreak(q);
-                
-                // 7-day pill strip (fits inside the flex card)
-                const pills = chrono.map(d => {
+            document.getElementById('equalizerColumnsGrid').innerHTML = colsHtml;
+            document.getElementById('weeklyAvgBadge').textContent = `WK_AVG: ${Math.round(weeklySumPct / 7)}%`;
+
+            // Build Smooth Catmull-Rom / Cubic Bezier SVG Path
+            if (points.length > 1) {
+                let dPath = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 0; i < points.length - 1; i++) {
+                    const curr = points[i];
+                    const next = points[i + 1];
+                    const ctrlX1 = curr.x + (next.x - curr.x) * 0.5;
+                    const ctrlY1 = curr.y;
+                    const ctrlX2 = curr.x + (next.x - curr.x) * 0.5;
+                    const ctrlY2 = next.y;
+                    dPath += ` C ${ctrlX1} ${ctrlY1}, ${ctrlX2} ${ctrlY2}, ${next.x} ${next.y}`;
+                }
+
+                const nodesSvg = points.map(p => `
+                    <circle cx="${p.x}" cy="${p.y}" r="${p.isSelected ? 6 : 4}"
+                        fill="${p.isSelected ? '#CCFF00' : '#08080C'}"
+                        stroke="#00F0FF" stroke-width="2.5" />
+                `).join('');
+
+                document.getElementById('telemetrySplineSvg').innerHTML = `
+                    <path d="${dPath}" fill="none" stroke="#00F0FF" stroke-width="3" class="spline-glow" />
+                    ${nodesSvg}
+                `;
+            }
+        }
+
+        // =========================================================
+        // 7-DAY CHRONO SELECTOR STRIP
+        // =========================================================
+        function renderChronoStrip(chrono) {
+            const totalQuests = Math.max(quests.length, 1);
+            document.getElementById('chronoStripGrid').innerHTML = chrono.map(day => {
+                const isSelected = day.key === selectedDateKey;
+                const done = quests.filter(q => q.logs[day.key]).length;
+                const ratio = Math.round((done / totalQuests) * 100);
+
+                return `
+                    <button onclick="selectDate('${day.key}')"
+                        class="te-btn py-2 px-1.5 sm:px-3 flex flex-col items-center justify-between font-mono transition ${
+                            isSelected
+                                ? 'bg-[#191E31] border-lime text-white shadow-[0_0_15px_rgba(204,255,0,0.28)]'
+                                : 'bg-[#0E101A] border-[#242940] text-slate-400 hover:text-white'
+                        }">
+                        <div class="flex items-center gap-1">
+                            <span class="text-[10px] font-bold ${isSelected ? 'text-lime' : ''}">${day.shortDay}</span>
+                            ${day.isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-cyan"></span>' : ''}
+                        </div>
+                        <span class="text-base sm:text-xl font-extrabold my-0.5 ${isSelected ? 'text-white' : 'text-slate-200'}">${day.dayNum}</span>
+                        <div class="w-full h-1.5 bg-[#07080D] border border-[#23273E] overflow-hidden mt-1">
+                            <div class="h-full ${ratio === 100 ? 'bg-cyan' : 'bg-lime'} transition-all" style="width:${ratio}%"></div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // =========================================================
+        // FILTER BAR & HABIT CASSETTES
+        // =========================================================
+        function renderCategoryFilterBar() {
+            const filters = [
+                { id: 'ALL', label: '[ALL_MODULES]' },
+                { id: 'PENDING', label: '[UNSYNCED]' },
+                { id: 'SYNCED', label: '[SYNCED ✓]' },
+                { id: 'CORE_DEV', label: '#CORE_DEV' },
+                { id: 'FITNESS', label: '#FITNESS' },
+                { id: 'ACADEMIC', label: '#ACADEMIC' },
+                { id: 'SYSTEM', label: '#SYSTEM' }
+            ];
+
+            document.getElementById('categoryFilterBar').innerHTML = filters.map(f => {
+                const active = activeFilter === f.id;
+                return `
+                    <button onclick="setCategoryFilter('${f.id}')"
+                        class="te-btn px-3 sm:px-4 py-1.5 font-mono text-xs font-extrabold uppercase whitespace-nowrap transition ${
+                            active
+                                ? 'bg-lime text-obsidian border-white'
+                                : 'bg-[#111422] text-slate-300 border-[#282D46] hover:border-lime/50'
+                        }">
+                        ${f.label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderQuestCassettes(chrono) {
+            let filtered = quests;
+            if (activeFilter === 'PENDING') {
+                filtered = quests.filter(q => !q.logs[selectedDateKey]);
+            } else if (activeFilter === 'SYNCED') {
+                filtered = quests.filter(q => !!q.logs[selectedDateKey]);
+            } else if (activeFilter !== 'ALL') {
+                filtered = quests.filter(q => q.category === activeFilter);
+            }
+
+            document.getElementById('moduleCountReadout').textContent =
+                `${String(filtered.length).padStart(2, '0')} / ${String(quests.length).padStart(2, '0')} MODULES SHOWN`;
+
+            if (filtered.length === 0) {
+                document.getElementById('questCassettesGrid').innerHTML = `
+                    <div class="col-span-full hud-chassis p-8 text-center font-mono">
+                        <p class="text-sm text-slate-300 font-bold mb-2">NO HABIT CASSETTES MATCH FILTER [${activeFilter}]</p>
+                        <button onclick="setCategoryFilter('ALL')" class="te-btn px-4 py-2 bg-lime text-obsidian font-extrabold text-xs uppercase">
+                            [RESET FILTER]
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('questCassettesGrid').innerHTML = filtered.map(q => {
+                const pal = NEON_PALETTES[q.neon] || NEON_PALETTES.lime;
+                const isDoneSelected = !!q.logs[selectedDateKey];
+                const currentStreak = calculateCurrentStreak(q);
+                const bestStreak = calculateBestStreak(q);
+                const weekDoneCount = chrono.filter(d => q.logs[d.key]).length;
+                const targetDays = Number(q.targetDays) || 7;
+
+                // 7-Day Interactive Mini LED Pills inside every cassette
+                const miniGridHtml = chrono.map(d => {
                     const hit = !!q.logs[d.key];
-                    return `<div class="flex-1 text-center py-1.5 border font-mono text-[10px] font-bold ${hit ? core.btnOn : 'bg-[#090A10] border-[#1F2336] text-slate-600'}">${hit?'ON':d.num}</div>`;
+                    const isFocusedDay = d.key === selectedDateKey;
+                    return `
+                        <button onclick="toggleQuestDay('${q.id}', '${d.key}', event)"
+                            title="Toggle ${q.name} on ${d.fullLabel}"
+                            class="flex-1 py-1.5 px-0.5 border font-mono text-[10px] font-extrabold transition flex flex-col items-center ${
+                                hit
+                                    ? pal.pillOn
+                                    : 'bg-[#08090F] border-[#22263A] text-slate-500 hover:border-slate-400 hover:text-slate-300'
+                            } ${isFocusedDay ? 'ring-1 ring-white' : ''}">
+                            <span class="text-[8px] opacity-80">${d.shortDay.slice(0, 2)}</span>
+                            <span>${hit ? '✓' : d.dayNum}</span>
+                        </button>
+                    `;
                 }).join('');
 
                 return `
-                    <article class="hud-chassis p-4 md:p-5 flex flex-col justify-between h-full transition-all ${hitToday ? `border-l-4 ${core.border}` : ''}">
+                    <article class="hud-chassis corner-screws p-4 sm:p-5 flex flex-col justify-between transition-all ${
+                        isDoneSelected ? 'border-l-4' : ''
+                    }" style="${isDoneSelected ? `border-left-color: ${pal.hex};` : ''}">
                         <div>
-                            <div class="flex justify-between font-mono text-[10px] md:text-xs pb-3 mb-3 border-b border-[#1E2234]">
-                                <div class="flex items-center gap-2">
-                                    <span class="${core.badgeBg} ${core.badgeText} px-2 py-1 font-bold">[${q.category}]</span>
-                                    <span class="text-slate-400">🔥 ${streak}D</span>
+                            <!-- Cassette Top Metadata Bar -->
+                            <div class="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-[#1E2236] font-mono text-[10px]">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="px-2 py-0.5 border font-extrabold ${pal.badge}">[${q.category}]</span>
+                                    <span class="px-2 py-0.5 bg-[#151828] border border-[#2B314D] text-lime font-bold">+${q.xp} XP</span>
                                 </div>
-                                <button onclick="openForgeModal('${q.id}')" class="text-slate-500 hover:text-white">[CFG]</button>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="openForgeModal('${q.id}')" title="Customize Quest"
+                                        class="px-2 py-0.5 bg-[#151828] border border-[#2B314D] text-slate-300 hover:border-cyan hover:text-cyan font-bold">
+                                        [EDIT]
+                                    </button>
+                                    <button onclick="quickDeleteQuest('${q.id}')" title="Delete Quest"
+                                        class="px-2 py-0.5 bg-[#151828] border border-[#2B314D] text-slate-400 hover:border-magenta hover:text-magenta font-bold">
+                                        [×]
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <div class="flex items-start gap-3 mb-4">
-                                <div class="text-3xl">${q.glyph}</div>
+
+                            <!-- Icon + Title + Spec -->
+                            <div class="flex items-start gap-3.5 mb-4">
+                                <div class="w-12 h-12 flex-shrink-0 bg-[#08090F] border border-[#262B44] flex items-center justify-center text-2xl">
+                                    ${q.glyph || '⚡'}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-display text-base sm:text-lg font-extrabold leading-snug truncate ${
+                                        isDoneSelected ? 'text-lime' : 'text-white'
+                                    }">${q.name}</h3>
+                                    <p class="font-mono text-xs text-slate-400 line-clamp-2 mt-0.5">${q.spec}</p>
+                                </div>
+                            </div>
+
+                            <!-- Telemetry Readout Strip (Current Streak, Best Streak, Weekly Target) -->
+                            <div class="grid grid-cols-3 gap-2 p-2 bg-[#08090F] border border-[#1E2236] mb-3.5 font-mono text-[10px]">
                                 <div>
-                                    <h4 class="font-display text-lg md:text-xl font-extrabold ${hitToday?'text-lime':'text-white'}">${q.name}</h4>
-                                    <p class="font-mono text-xs text-slate-400 mt-1">${q.spec}</p>
+                                    <span class="text-slate-500 block">STREAK</span>
+                                    <span class="text-cyberOrange font-extrabold text-xs">🔥 ${currentStreak}D</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block">BEST</span>
+                                    <span class="text-white font-bold text-xs">${bestStreak}D</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block">WEEK_GOAL</span>
+                                    <span class="text-cyan font-bold text-xs">${weekDoneCount}/${targetDays}D</span>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="mt-auto">
-                            <!-- Mechanical Trigger -->
-                            <button onclick="toggleLog('${q.id}')" class="te-btn w-full py-3 md:py-4 mb-4 font-mono flex items-center justify-center gap-2 ${hitToday ? 'te-trigger-on' : 'te-trigger-off'}">
-                                <span class="text-sm md:text-base font-extrabold tracking-widest">${hitToday ? 'SYSTEM_SYNCED ✓' : '[ ENGAGE MODULE ]'}</span>
+
+                        <div>
+                            <!-- Primary Teenage Engineering Mechanical Launch Button -->
+                            <button onclick="toggleQuestDay('${q.id}', '${selectedDateKey}', event)"
+                                class="te-btn w-full py-3 px-4 mb-3 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-between ${
+                                    isDoneSelected
+                                        ? pal.triggerOn
+                                        : 'bg-[#151826] text-slate-200 border-[#2F3552] hover:border-lime'
+                                }">
+                                <span>${isDoneSelected ? 'SYNCED ✓ // MODULE_ACTIVE' : '[LAUNCH // LOG CHECK-IN]'}</span>
+                                <span class="text-[11px] opacity-90">${isDoneSelected ? 'DONE' : `+${q.xp}XP`}</span>
                             </button>
-                            
-                            <!-- Ledger Strip -->
-                            <div class="flex gap-1">${pills}</div>
+
+                            <!-- Integrated 7-Day Interactive LED Pill Strip -->
+                            <div class="flex items-center gap-1">
+                                ${miniGridHtml}
+                            </div>
                         </div>
                     </article>
                 `;
             }).join('');
         }
 
-        // Interaction Logic
-        function selectDate(key) { selectedDateKey = key; renderHud(); }
-        
-        function setFilterCategory(cat) {
-            activeCategory = cat;
-            document.querySelectorAll('#categorySwitchBar button').forEach(b => {
-                b.className = b.dataset.cat === cat 
-                    ? 'te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-lime text-obsidian border-white whitespace-nowrap'
-                    : 'te-btn px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap';
+        // =========================================================
+        // TAB 02: STREAK MATRIX & 28-DAY HEATMAP RENDERER
+        // =========================================================
+        function renderMatrixTab(chrono, stats) {
+            document.getElementById('matrixTotalLogs').textContent = stats.totalLogsCount;
+            document.getElementById('matrixMaxStreak').textContent = `${stats.maxStreak}D`;
+            document.getElementById('matrixRankTitle').textContent = stats.rankTitle;
+            document.getElementById('matrixTotalXpSub').textContent = `${stats.totalXp} TOTAL XP`;
+
+            // Calculate 7-day fleet efficiency
+            const totalPossible = Math.max(quests.length * 7, 1);
+            let weekChecks = 0;
+            quests.forEach(q => {
+                chrono.forEach(d => { if (q.logs[d.key]) weekChecks++; });
             });
-            renderHud();
+            document.getElementById('matrixWeeklyRate').textContent = `${Math.round((weekChecks / totalPossible) * 100)}%`;
+
+            // 1. 7-Day Interactive Matrix Table
+            const headerCells = chrono.map(d => `
+                <th class="p-2 text-center font-mono text-[10px] border border-[#22263A] ${d.key === selectedDateKey ? 'bg-[#191E31] text-lime' : 'bg-[#0B0D16] text-slate-400'}">
+                    <div>${d.shortDay}</div>
+                    <div class="text-white font-extrabold">${d.dayNum}</div>
+                </th>
+            `).join('');
+
+            const rowsHtml = quests.map(q => {
+                const pal = NEON_PALETTES[q.neon] || NEON_PALETTES.lime;
+                const cells = chrono.map(d => {
+                    const hit = !!q.logs[d.key];
+                    return `
+                        <td class="p-1.5 border border-[#22263A] text-center">
+                            <button onclick="toggleQuestDay('${q.id}', '${d.key}', event)"
+                                class="w-8 h-8 sm:w-9 sm:h-9 mx-auto font-mono text-xs font-extrabold border transition flex items-center justify-center ${
+                                    hit ? pal.pillOn : 'bg-[#08090F] border-[#23273E] text-slate-600 hover:text-white'
+                                }">
+                                ${hit ? '✓' : '·'}
+                            </button>
+                        </td>
+                    `;
+                }).join('');
+
+                return `
+                    <tr class="hover:bg-[#131726]/60">
+                        <td class="p-2.5 border border-[#22263A] font-mono text-xs font-bold text-white whitespace-nowrap">
+                            <span class="mr-1.5">${q.glyph}</span>${q.name}
+                        </td>
+                        ${cells}
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('sevenDayMatrixTable').innerHTML = `
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="p-2 text-left font-mono text-[10px] text-slate-400 bg-[#0B0D16] border border-[#22263A]">QUEST_MODULE</th>
+                            ${headerCells}
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            `;
+
+            // 2. Consistency Leaderboard
+            const ranked = [...quests].map(q => {
+                const wkCount = chrono.filter(d => q.logs[d.key]).length;
+                const target = Number(q.targetDays) || 7;
+                const pct = Math.min(100, Math.round((wkCount / target) * 100));
+                return { ...q, wkCount, target, pct, streak: calculateCurrentStreak(q) };
+            }).sort((a, b) => b.pct - a.pct || b.streak - a.streak);
+
+            document.getElementById('leaderboardContainer').innerHTML = ranked.map((q, idx) => `
+                <div class="p-2.5 bg-[#090B12] border border-[#22263A] font-mono text-xs">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-white truncate">#0${idx + 1} ${q.glyph} ${q.name}</span>
+                        <span class="text-lime font-extrabold">${q.pct}%</span>
+                    </div>
+                    <div class="w-full h-2 bg-[#141828] overflow-hidden">
+                        <div class="h-full bg-lime" style="width:${q.pct}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                        <span>WEEK: ${q.wkCount}/${q.target}D</span>
+                        <span class="text-cyberOrange font-bold">🔥 STREAK: ${q.streak}D</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // 3. Category Telemetry Breakdown
+            const categories = ['CORE_DEV', 'FITNESS', 'ACADEMIC', 'SYSTEM'];
+            document.getElementById('categoryBreakdownList').innerHTML = categories.map(cat => {
+                const catQuests = quests.filter(q => q.category === cat);
+                if (catQuests.length === 0) return '';
+                let hits = 0;
+                catQuests.forEach(q => chrono.forEach(d => { if (q.logs[d.key]) hits++; }));
+                const rate = Math.round((hits / (catQuests.length * 7)) * 100);
+                return `
+                    <div class="flex items-center justify-between py-1 border-b border-[#1D2134]">
+                        <span class="text-slate-300">[${cat}] (${catQuests.length})</span>
+                        <span class="text-cyan font-bold">${rate}% SYNC</span>
+                    </div>
+                `;
+            }).join('');
+
+            // 4. 28-Day Neural Heatmap
+            const cells28 = [];
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            for (let i = 27; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - i);
+                const k = toDateKey(d);
+                const done = quests.filter(q => q.logs[k]).length;
+                const ratio = quests.length ? done / quests.length : 0;
+                let bg = 'bg-[#121522] border-[#22263A] text-slate-500';
+                if (ratio === 1) bg = 'bg-lime text-obsidian border-white font-extrabold shadow-[0_0_8px_#CCFF00]';
+                else if (ratio >= 0.6) bg = 'bg-lime/70 text-obsidian border-lime font-bold';
+                else if (ratio > 0) bg = 'bg-cyan/35 text-white border-cyan/60';
+
+                cells28.push(`
+                    <button onclick="selectDate('${k}'); switchMainTab('DECK');"
+                        title="${k}: ${done}/${quests.length} completed"
+                        class="p-2 border font-mono text-[10px] flex flex-col items-center justify-center transition hover:scale-105 ${bg}">
+                        <span>${String(d.getDate()).padStart(2, '0')}</span>
+                        <span class="text-[8px] opacity-80">${done}/${quests.length}</span>
+                    </button>
+                `);
+            }
+            document.getElementById('heatmap28Grid').innerHTML = cells28.join('');
         }
 
-        function toggleLog(id) {
-            const q = quests.find(x => x.id === id);
-            if(q.logs[selectedDateKey]) { delete q.logs[selectedDateKey]; } 
-            else { q.logs[selectedDateKey] = true; toast(`[SYNC] ${q.name} +${q.xp}XP`); }
-            saveSystemState(); renderHud();
+        // =========================================================
+        // TAB 03: SYS_CONFIG MODULE LIST RENDERER
+        // =========================================================
+        function renderConfigTab() {
+            document.getElementById('configModuleList').innerHTML = quests.map(q => {
+                const pal = NEON_PALETTES[q.neon] || NEON_PALETTES.lime;
+                return `
+                    <div class="p-3.5 bg-[#090B12] border border-[#242942] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="w-10 h-10 bg-[#121524] border border-[#2B314D] flex items-center justify-center text-xl">${q.glyph}</span>
+                            <div class="min-w-0">
+                                <div class="font-bold text-white truncate">${q.name}</div>
+                                <div class="text-[11px] text-slate-400 truncate">${q.spec}</div>
+                                <div class="flex items-center gap-2 mt-1 text-[10px]">
+                                    <span class="px-1.5 py-0.2 border ${pal.badge}">[${q.category}]</span>
+                                    <span class="text-lime">+${q.xp} XP</span>
+                                    <span class="text-cyan">TARGET: ${q.targetDays || 7}D/WK</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 ml-auto">
+                            <button onclick="openForgeModal('${q.id}')" class="te-btn px-3 py-1.5 bg-[#161A2C] text-cyan border-cyan/50 font-bold">
+                                [CUSTOMIZE]
+                            </button>
+                            <button onclick="quickDeleteQuest('${q.id}')" class="te-btn px-3 py-1.5 bg-magenta/20 text-magenta border-magenta/50 font-bold">
+                                [DELETE]
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        let toastTimer;
-        function toast(msg) {
-            const el = document.getElementById('hudToast');
-            document.getElementById('hudToastMsg').textContent = msg;
-            el.classList.remove('opacity-0', '-translate-y-3');
-            el.classList.add('opacity-100', 'translate-y-0');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-                el.classList.add('opacity-0', '-translate-y-3');
-                el.classList.remove('opacity-100', 'translate-y-0');
-            }, 2500);
+        // =========================================================
+        // INTERACTION HANDLERS (TOGGLE HABIT, FILTER, TIME TRAVEL)
+        // =========================================================
+        function toggleQuestDay(questId, dateKey, evt) {
+            const quest = quests.find(q => q.id === questId);
+            if (!quest) return;
+
+            const prevLevel = getPlayerTelemetry().level;
+            const pal = NEON_PALETTES[quest.neon] || NEON_PALETTES.lime;
+
+            if (quest.logs[dateKey]) {
+                delete quest.logs[dateKey];
+                playSynthSfx('toggleOff');
+                showHudToast('[UNSYNC]', `${quest.name} (${dateKey})`, '#FF4D00');
+            } else {
+                quest.logs[dateKey] = true;
+                playSynthSfx('toggleOn');
+                if (evt && evt.clientX) {
+                    spawnSparkBurst(evt.clientX, evt.clientY, pal.hex);
+                }
+                showHudToast('[SYNCED ✓]', `${quest.name} // +${quest.xp} XP`, pal.hex);
+            }
+
+            saveState();
+            const newLevel = getPlayerTelemetry().level;
+            if (newLevel > prevLevel) {
+                setTimeout(() => {
+                    playSynthSfx('levelUp');
+                    showHudToast('[LEVEL UP!]', `PROMOTED TO LVL.${String(newLevel).padStart(2, '0')}`, '#00F0FF');
+                }, 260);
+            }
+            renderAll();
         }
 
-        function toggleScanlines() {
-            scanlinesEnabled = !scanlinesEnabled;
-            document.getElementById('appBody').classList.toggle('scanlines', scanlinesEnabled);
-            document.getElementById('crtBtn').textContent = scanlinesEnabled ? 'CRT:ON' : 'CRT:OFF';
+        function selectDate(dateKey) {
+            playSynthSfx('click');
+            selectedDateKey = dateKey;
+            renderAll();
         }
 
-        function toggleAudioSfx() {
-            sfxEnabled = !sfxEnabled;
-            document.getElementById('dockSfxLabel').textContent = sfxEnabled ? '[SFX: ON]' : '[SFX: MUTE]';
+        function shiftWeekOffset(delta) {
+            const nextVal = weekOffset + delta;
+            if (nextVal > 0) return;
+            playSynthSfx('click');
+            weekOffset = nextVal;
+            const windowDays = get7DayChronoWindow();
+            selectedDateKey = windowDays[windowDays.length - 1].key;
+            renderAll();
         }
 
-        // Form Logic
-        function openForgeModal(id=null) {
-            const f = document.getElementById('forgeForm'); f.reset();
-            if(id) {
-                const q = quests.find(x=>x.id===id);
+        function jumpToToday() {
+            playSynthSfx('click');
+            weekOffset = 0;
+            selectedDateKey = todayKey;
+            renderAll();
+        }
+
+        function setCategoryFilter(filterId) {
+            playSynthSfx('click');
+            activeFilter = filterId;
+            renderAll();
+        }
+
+        function switchMainTab(tabName) {
+            playSynthSfx('click');
+            activeTab = tabName;
+            document.getElementById('tabViewDeck').classList.toggle('hidden', tabName !== 'DECK');
+            document.getElementById('tabViewMatrix').classList.toggle('hidden', tabName !== 'MATRIX');
+            document.getElementById('tabViewConfig').classList.toggle('hidden', tabName !== 'CONFIG');
+
+            const tabs = [
+                { id: 'DECK', btn: 'navTabDeck' },
+                { id: 'MATRIX', btn: 'navTabMatrix' },
+                { id: 'CONFIG', btn: 'navTabConfig' }
+            ];
+            tabs.forEach(t => {
+                const el = document.getElementById(t.btn);
+                if (t.id === tabName) {
+                    el.className = 'te-btn py-2.5 px-2 flex items-center justify-center gap-2 bg-lime text-obsidian border-white font-extrabold';
+                } else {
+                    el.className = 'te-btn py-2.5 px-2 flex items-center justify-center gap-2 bg-[#131624] text-slate-300 border-[#2B304A] font-bold';
+                }
+            });
+            renderAll();
+        }
+
+        // =========================================================
+        // CUSTOMIZATION MODAL (CREATE / EDIT / DELETE HABIT)
+        // =========================================================
+        function renderModalPickers() {
+            document.getElementById('glyphPickerGrid').innerHTML = GLYPH_OPTIONS.map(g => `
+                <button type="button" onclick="selectModalGlyph('${g}')"
+                    class="p-2 text-lg border transition flex items-center justify-center ${
+                        selectedGlyph === g
+                            ? 'bg-lime/20 border-lime scale-105'
+                            : 'bg-[#07080D] border-[#252A40] hover:border-slate-500'
+                    }">
+                    ${g}
+                </button>
+            `).join('');
+
+            document.getElementById('colorPickerGrid').innerHTML = Object.values(NEON_PALETTES).map(p => `
+                <button type="button" onclick="selectModalNeon('${p.key}')"
+                    class="py-2 px-2 border font-mono text-[10px] font-extrabold uppercase transition flex items-center justify-center gap-1.5 ${
+                        selectedNeon === p.key
+                            ? 'border-white ring-2 ring-lime bg-[#171B2C] text-white'
+                            : 'border-[#262B42] bg-[#07080D] text-slate-400'
+                    }">
+                    <span class="w-2.5 h-2.5 inline-block" style="background:${p.hex}"></span>
+                    <span>${p.label}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectModalGlyph(g) {
+            selectedGlyph = g;
+            renderModalPickers();
+        }
+
+        function selectModalNeon(neonKey) {
+            selectedNeon = neonKey;
+            renderModalPickers();
+        }
+
+        function openForgeModal(questId = null) {
+            playSynthSfx('click');
+            const modal = document.getElementById('forgeModal');
+            const delBtn = document.getElementById('deleteQuestModalBtn');
+
+            if (questId) {
+                const q = quests.find(item => item.id === questId);
+                if (!q) return;
+                document.getElementById('forgeModalTitle').textContent = 'CUSTOMIZE QUEST MODULE';
                 document.getElementById('forgeHabitId').value = q.id;
                 document.getElementById('forgeNameInput').value = q.name;
                 document.getElementById('forgeSpecInput').value = q.spec;
                 document.getElementById('forgeCategoryInput').value = q.category;
-                document.getElementById('forgeXpInput').value = q.xp;
-                document.getElementById('deleteModBtn').classList.remove('hidden');
-                document.getElementById('forgeModalTitle').textContent = 'RECONFIGURE MODULE';
+                document.getElementById('forgeXpInput').value = String(q.xp || 50);
+                document.getElementById('forgeTargetInput').value = String(q.targetDays || 7);
+                selectedGlyph = q.glyph || '⚡';
+                selectedNeon = q.neon || 'lime';
+                delBtn.classList.remove('hidden');
             } else {
+                document.getElementById('forgeModalTitle').textContent = 'FORGE NEW QUEST MODULE';
+                document.getElementById('forgeForm').reset();
                 document.getElementById('forgeHabitId').value = '';
-                document.getElementById('deleteModBtn').classList.add('hidden');
-                document.getElementById('forgeModalTitle').textContent = 'FORGE NEW QUEST';
+                selectedGlyph = '⚡';
+                selectedNeon = 'lime';
+                delBtn.classList.add('hidden');
             }
-            document.getElementById('forgeModal').classList.remove('hidden');
+
+            renderModalPickers();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
-        function closeForgeModal() { document.getElementById('forgeModal').classList.add('hidden'); }
+        function closeForgeModal() {
+            const modal = document.getElementById('forgeModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
 
         function saveHabitModule(e) {
             e.preventDefault();
             const id = document.getElementById('forgeHabitId').value;
-            const data = {
-                name: document.getElementById('forgeNameInput').value,
-                spec: document.getElementById('forgeSpecInput').value || 'System execution',
-                category: document.getElementById('forgeCategoryInput').value,
-                xp: Number(document.getElementById('forgeXpInput').value),
-                glyph: '⚙️', neon: 'lime'
-            };
-            if(id) {
-                let q = quests.find(x=>x.id===id); Object.assign(q, data); toast('[MOD.UPDATED]');
+            const name = document.getElementById('forgeNameInput').value.trim();
+            const spec = document.getElementById('forgeSpecInput').value.trim() || 'Daily tactical execution protocol';
+            const category = document.getElementById('forgeCategoryInput').value;
+            const xp = Number(document.getElementById('forgeXpInput').value) || 50;
+            const targetDays = Number(document.getElementById('forgeTargetInput').value) || 7;
+
+            if (!name) return;
+
+            if (id) {
+                const existing = quests.find(q => q.id === id);
+                if (existing) {
+                    Object.assign(existing, { name, spec, category, xp, targetDays, glyph: selectedGlyph, neon: selectedNeon });
+                    showHudToast('[MOD.UPDATED]', `${name} reconfigured`, '#00F0FF');
+                }
             } else {
-                quests.unshift({...data, id:'m'+Date.now(), logs:{}}); toast('[MOD.DEPLOYED]');
+                quests.unshift({
+                    id: 'q_' + Date.now(),
+                    name,
+                    spec,
+                    category,
+                    xp,
+                    targetDays,
+                    glyph: selectedGlyph,
+                    neon: selectedNeon,
+                    logs: {}
+                });
+                showHudToast('[MOD.DEPLOYED]', `${name} added to rack`, '#CCFF00');
             }
-            saveSystemState(); closeForgeModal(); renderHud();
+
+            playSynthSfx('toggleOn');
+            saveState();
+            closeForgeModal();
+            renderAll();
         }
 
-        function deleteCurrentModule() {
-            quests = quests.filter(x => x.id !== document.getElementById('forgeHabitId').value);
-            saveSystemState(); closeForgeModal(); renderHud(); toast('[MOD.SCRAPPED]');
+        function deleteQuestFromModal() {
+            const id = document.getElementById('forgeHabitId').value;
+            if (!id) return;
+            quests = quests.filter(q => q.id !== id);
+            playSynthSfx('toggleOff');
+            saveState();
+            closeForgeModal();
+            renderAll();
+            showHudToast('[SCRAPPED]', 'Module removed from registry', '#FF0055');
         }
 
-        setInterval(() => {
-            const d = new Date();
-            document.getElementById('liveClockHud').textContent = 
-                `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-        }, 1000);
+        function quickDeleteQuest(questId) {
+            if (quests.length <= 1) {
+                showHudToast('[SYS.LOCK]', 'At least 1 active module required', '#FFB800');
+                return;
+            }
+            const target = quests.find(q => q.id === questId);
+            quests = quests.filter(q => q.id !== questId);
+            playSynthSfx('toggleOff');
+            saveState();
+            renderAll();
+            showHudToast('[SCRAPPED]', `${target ? target.name : 'Module'} deleted`, '#FF0055');
+        }
 
-        window.onload = () => { loadSystemState(); renderHud(); };
+        // =========================================================
+        // CRT, AUDIO, JSON BACKUP & FACTORY RESET CONTROLS
+        // =========================================================
+        function syncPreferenceButtons() {
+            document.getElementById('appBody').classList.toggle('scanlines', scanlinesEnabled);
+            document.getElementById('crtBtn').textContent = scanlinesEnabled ? 'CRT:ON' : 'CRT:OFF';
+            document.getElementById('sfxBtn').textContent = sfxEnabled ? 'SFX:ON' : 'SFX:MUTE';
+
+            const cfgCrt = document.getElementById('configCrtBtn');
+            if (cfgCrt) {
+                cfgCrt.textContent = scanlinesEnabled ? 'ENABLED' : 'DISABLED';
+                cfgCrt.className = scanlinesEnabled
+                    ? 'te-btn px-3 py-1.5 bg-lime text-obsidian font-extrabold'
+                    : 'te-btn px-3 py-1.5 bg-[#171A2A] text-slate-400 font-bold';
+            }
+
+            const cfgSfx = document.getElementById('configSfxBtn');
+            if (cfgSfx) {
+                cfgSfx.textContent = sfxEnabled ? 'ENABLED' : 'MUTED';
+                cfgSfx.className = sfxEnabled
+                    ? 'te-btn px-3 py-1.5 bg-cyan text-obsidian font-extrabold'
+                    : 'te-btn px-3 py-1.5 bg-[#171A2A] text-slate-400 font-bold';
+            }
+        }
+
+        function toggleScanlines() {
+            scanlinesEnabled = !scanlinesEnabled;
+            playSynthSfx('click');
+            syncPreferenceButtons();
+            saveState();
+        }
+
+        function toggleAudioSfx() {
+            sfxEnabled = !sfxEnabled;
+            if (sfxEnabled) playSynthSfx('toggleOn');
+            syncPreferenceButtons();
+            saveState();
+        }
+
+        function exportBackupJson() {
+            playSynthSfx('click');
+            const dataStr = JSON.stringify({ version: '2.6', exportedAt: new Date().toISOString(), quests }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SYS_HABIT_BACKUP_${todayKey}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showHudToast('[BACKUP.OK]', 'JSON snapshot downloaded', '#00F0FF');
+        }
+
+        function triggerImportJson() {
+            document.getElementById('importJsonInput').click();
+        }
+
+        function handleImportJsonFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    const importedQuests = Array.isArray(parsed) ? parsed : parsed.quests;
+                    if (Array.isArray(importedQuests) && importedQuests.length > 0) {
+                        quests = importedQuests;
+                        saveState();
+                        renderAll();
+                        playSynthSfx('levelUp');
+                        showHudToast('[IMPORT.OK]', `${quests.length} modules restored`, '#CCFF00');
+                    }
+                } catch (err) {
+                    showHudToast('[IMPORT.ERR]', 'Invalid JSON backup file', '#FF0055');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function loadDemoStreakData() {
+            playSynthSfx('levelUp');
+            quests.forEach((q, idx) => {
+                for (let i = 0; i < 12; i++) {
+                    if ((i + idx) % 4 !== 0) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
+                        q.logs[toDateKey(d)] = true;
+                    }
+                }
+            });
+            saveState();
+            renderAll();
+            showHudToast('[SIMULATION]', 'High-streak telemetry injected', '#CCFF00');
+        }
+
+        function openResetConfirmModal() {
+            playSynthSfx('click');
+            const m = document.getElementById('resetConfirmModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeResetConfirmModal() {
+            const m = document.getElementById('resetConfirmModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function executeFactoryReset() {
+            quests = buildDefaultQuests();
+            weekOffset = 0;
+            selectedDateKey = todayKey;
+            saveState();
+            closeResetConfirmModal();
+            renderAll();
+            playSynthSfx('toggleOff');
+            showHudToast('[SYS.PURGED]', 'Factory defaults restored', '#FF0055');
+        }
+
+        // Toast Helper
+        let toastTimeout;
+        function showHudToast(tag, message, borderHex = '#CCFF00') {
+            const toast = document.getElementById('hudToast');
+            const tagEl = document.getElementById('hudToastTag');
+            document.getElementById('hudToastText').textContent = message;
+            tagEl.textContent = tag;
+            tagEl.style.backgroundColor = borderHex;
+            toast.style.borderColor = borderHex;
+
+            toast.classList.remove('opacity-0', '-translate-y-3');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-3');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2400);
+        }
+
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveClockHud').textContent =
+                now.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Boot Sequence
+        window.onload = function () {
+            loadState();
+            syncPreferenceButtons();
+            renderAll();
+        };
     </script>
 </body>
 </html>
-```
