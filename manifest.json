@@ -1,0 +1,8 @@
+{
+  "short_name": "SYS.HABIT",
+  "name": "SYS.HABIT // V2.6 Streak Engine",
+  "display": "standalone",
+  "background_color": "#08080C",
+  "theme_color": "#08080C",
+  "orientation": "portrait"
+}

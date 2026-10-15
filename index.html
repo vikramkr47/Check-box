@@ -1,0 +1,1695 @@
+```html
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYS.HABIT // TACTICAL DEV & HUNTER HUD</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Syne, Space Grotesk, JetBrains Mono, Share Tech Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Share+Tech+Mono&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Syne', 'Space Grotesk', 'sans-serif'],
+                        grotesk: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        tech: ['Share Tech Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: '#08080C',
+                        panel: '#0E0F17',
+                        panelLight: '#151724',
+                        lime: '#CCFF00',
+                        cyberOrange: '#FF4D00',
+                        cyan: '#00F0FF',
+                        violet: '#9D4EDD',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --lime: #CCFF00;
+            --orange: #FF4D00;
+            --cyan: #00F0FF;
+            --violet: #9D4EDD;
+            --obsidian: #08080C;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: #08080C;
+            color: #F2F4F8;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+            /* Nothing OS + Blueprint Dot-Matrix Grid */
+            background-image: 
+                radial-gradient(rgba(204, 255, 0, 0.14) 1px, transparent 1px),
+                linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 16px 16px, 64px 64px, 64px 64px;
+            background-position: 0 0, 0 0, 0 0;
+        }
+
+        /* CRT Scanline Overlay (Toggleable) */
+        .scanlines::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 2px,
+                rgba(0, 0, 0, 0.28) 3px,
+                rgba(0, 0, 0, 0.28) 4px
+            );
+            pointer-events: none;
+            z-index: 90;
+        }
+
+        /* Neo-Brutalist Hardware Chassis & Chamfered Corners */
+        .hud-chassis {
+            background: #0E0F17;
+            border: 1.5px solid #26293E;
+            box-shadow: 4px 4px 0px #000000;
+            position: relative;
+        }
+
+        .hud-chassis-lime {
+            background: #0E0F17;
+            border: 1.5px solid #CCFF00;
+            box-shadow: 4px 4px 0px rgba(204, 255, 0, 0.22);
+        }
+
+        .hud-chassis-cyan {
+            background: #0E0F17;
+            border: 1.5px solid #00F0FF;
+            box-shadow: 4px 4px 0px rgba(0, 240, 255, 0.2);
+        }
+
+        .chamfer-box {
+            clip-path: polygon(
+                0 0,
+                calc(100% - 14px) 0,
+                100% 14px,
+                100% 100%,
+                14px 100%,
+                0 calc(100% - 14px)
+            );
+        }
+
+        .chamfer-sm {
+            clip-path: polygon(
+                0 0,
+                calc(100% - 8px) 0,
+                100% 8px,
+                100% 100%,
+                8px 100%,
+                0 calc(100% - 8px)
+            );
+        }
+
+        /* Teenage Engineering Physical Switch Feel */
+        .te-btn {
+            border: 1.5px solid #2E324B;
+            box-shadow: 0 4px 0 #030305;
+            transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .te-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #030305;
+        }
+
+        .te-trigger-on {
+            background: #CCFF00;
+            color: #08080C;
+            border-color: #FFFFFF;
+            box-shadow: 0 4px 0 #658000, 0 0 18px rgba(204, 255, 0, 0.45);
+        }
+
+        .te-trigger-off {
+            background: #141622;
+            color: #6E7691;
+            border-color: #2B2F46;
+            box-shadow: 0 4px 0 #050508;
+        }
+
+        /* Screen Shake on Quest Complete */
+        @keyframes screenBump {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2px, 2px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(-1px, -1px); }
+        }
+        .shake-bump {
+            animation: screenBump 0.18s ease-in-out;
+        }
+
+        /* Glitch Level Up Flash */
+        @keyframes glitchPulse {
+            0% { filter: hue-rotate(0deg) contrast(100%); }
+            30% { filter: hue-rotate(90deg) contrast(160%); transform: skewX(-2deg); }
+            60% { filter: hue-rotate(-60deg) contrast(130%); transform: skewX(2deg); }
+            100% { filter: hue-rotate(0deg) contrast(100%); transform: skewX(0deg); }
+        }
+        .level-glitch {
+            animation: glitchPulse 0.45s ease-out;
+        }
+
+        /* Hardware Corner Crosshairs */
+        .corner-screws::before,
+        .corner-screws::after {
+            content: "+";
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1;
+            color: #464B65;
+            position: absolute;
+            top: 5px;
+            pointer-events: none;
+        }
+        .corner-screws::before { left: 7px; }
+        .corner-screws::after { right: 7px; }
+
+        /* Hide scrollbars */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* LED Segment Glow */
+        .led-lit-lime {
+            background: #CCFF00;
+            box-shadow: 0 0 8px rgba(204, 255, 0, 0.75);
+        }
+        .led-lit-cyan {
+            background: #00F0FF;
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.75);
+        }
+        .led-lit-orange {
+            background: #FF4D00;
+            box-shadow: 0 0 8px rgba(255, 77, 0, 0.75);
+        }
+        .led-lit-violet {
+            background: #9D4EDD;
+            box-shadow: 0 0 8px rgba(157, 78, 221, 0.75);
+        }
+    </style>
+</head>
+<body id="appBody" class="min-h-screen pb-32 selection:bg-lime selection:text-obsidian scanlines">
+
+    <!-- Particle Spark Burst Canvas (Touch / Click Coordinates) -->
+    <canvas id="sparkCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- Main Mobile-First Hardware Column -->
+    <div id="mainHudWrapper" class="w-full max-w-md mx-auto px-3.5 pt-3 relative z-10">
+
+        <!-- TOP TELEMETRY TICKER BAR -->
+        <div class="flex items-center justify-between px-2.5 py-1.5 mb-2.5 bg-[#0C0D14] border border-[#23263A] font-mono text-[10px] tracking-widest text-slate-400">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-lime inline-block animate-ping"></span>
+                <span class="text-lime font-bold">SYS.ONLINE</span>
+                <span class="text-slate-600">//</span>
+                <span id="liveClockHud">00:00:00</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleScanlines()" id="crtBtn" class="px-1.5 py-0.5 bg-[#161928] border border-slate-700 text-[9px] text-cyan hover:border-cyan transition">
+                    CRT:ON
+                </button>
+                <span class="text-slate-500">V2.6</span>
+            </div>
+        </div>
+
+        <!-- PLAYER HUNTER / DEV SYSTEM HUD HEADER -->
+        <header class="hud-chassis corner-screws p-3.5 mb-4">
+            <div class="flex items-start justify-between gap-3 pt-1">
+                <!-- Left: Player Rank & Level Info -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 bg-lime text-obsidian tracking-wider uppercase">
+                            PLAYER_HUD
+                        </span>
+                        <span id="rankBadge" class="font-mono text-[10px] font-bold px-2 py-0.5 bg-[#161826] border border-cyan/50 text-cyan tracking-wider uppercase">
+                            [C-RANK ARCHITECT]
+                        </span>
+                    </div>
+
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <h1 class="font-display text-2xl font-extrabold tracking-tight text-white leading-none">
+                            LVL.<span id="playerLevelNum" class="text-lime">01</span>
+                        </h1>
+                        <span id="xpCounterText" class="font-mono text-xs text-slate-400">
+                            000 / 250 XP
+                        </span>
+                    </div>
+
+                    <!-- Segmented Hardware XP Progress Bar -->
+                    <div class="mt-2.5">
+                        <div class="flex items-center justify-between font-mono text-[9px] text-slate-400 mb-1">
+                            <span>EXP_CAPACITOR</span>
+                            <span id="totalStreakTop" class="text-cyberOrange font-bold flex items-center gap-1">
+                                ⚡ MAX_STREAK: 0D
+                            </span>
+                        </div>
+                        <div class="w-full h-3 bg-[#07080D] border border-[#2B3048] p-0.5 flex gap-0.5" id="xpSegmentedBar">
+                            <!-- 14 LED XP Segments injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Segmented Radial Reactor Sync Gauge -->
+                <div class="w-24 flex-shrink-0 bg-[#090A10] border border-[#24283E] p-2 flex flex-col items-center justify-center relative">
+                    <span class="font-mono text-[8px] text-slate-500 tracking-widest uppercase mb-1">DAILY_SYNC</span>
+                    <div class="relative w-16 h-16 flex items-center justify-center">
+                        <svg class="w-16 h-16 -rotate-90" viewBox="0 0 68 68">
+                            <circle cx="34" cy="34" r="27" stroke="#1A1D2E" stroke-width="6" stroke-dasharray="6 3" fill="none" />
+                            <circle id="reactorGaugeCircle" cx="34" cy="34" r="27" stroke="#CCFF00" stroke-width="6"
+                                stroke-dasharray="169.6" stroke-dashoffset="169.6" stroke-linecap="butt" fill="none"
+                                class="transition-all duration-500 ease-out" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="dailySyncPercent" class="font-mono text-sm font-extrabold text-white leading-none">0%</span>
+                            <span id="dailySyncFraction" class="font-mono text-[9px] text-lime mt-0.5">0/5</span>
+                        </div>
+                    </div>
+                    <span id="syncStatusLabel" class="font-mono text-[8px] text-slate-400 uppercase mt-1 tracking-wider">STANDBY</span>
+                </div>
+            </div>
+
+            <!-- Bottom Micro-Status Strip inside Header -->
+            <div class="mt-3 pt-2 border-t border-dashed border-[#24283D] flex items-center justify-between font-mono text-[10px]">
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <span class="text-cyberOrange font-bold">&gt;&gt;</span>
+                    <span id="systemBroadcastText" class="truncate">SYSTEM QUEST: COMPLETE ALL MODULES TO AVOID PENALTY</span>
+                </div>
+                <button onclick="selectToday()" id="returnTodayBtn" class="hidden px-2 py-0.5 bg-cyberOrange text-obsidian font-extrabold text-[9px] uppercase">
+                    RTN_TODAY
+                </button>
+            </div>
+        </header>
+
+        <!-- 7-DAY TIME-TRAVEL HARDWARE SELECTOR KEYS -->
+        <section class="mb-4">
+            <div class="flex items-center justify-between mb-1.5 px-0.5 font-mono text-[10px]">
+                <span class="text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-cyan inline-block"></span>
+                    CHRONO_BUFFER // 07_DAYS
+                </span>
+                <span id="selectedDateReadout" class="text-cyan font-bold">2026.10.15 [TODAY]</span>
+            </div>
+            <div id="chronoStripGrid" class="grid grid-cols-7 gap-1.5">
+                <!-- Populated via JS -->
+            </div>
+        </section>
+
+        <!-- ========================================================== -->
+        <!-- MODE 01: QUEST DECK & EQUALIZER TELEMETRY                  -->
+        <!-- ========================================================== -->
+        <main id="deckView" class="space-y-4">
+
+            <!-- EQUALIZER / POWER CORE TELEMETRY 7-DAY STREAK CHART -->
+            <section class="hud-chassis p-3.5 relative">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-mono text-[9px] px-1.5 py-0.5 bg-cyan/15 text-cyan border border-cyan/40 font-bold">
+                                TELEMETRY_CORE
+                            </span>
+                            <span class="font-mono text-[10px] text-slate-400">STREAK_WAVE_EQ</span>
+                        </div>
+                        <p class="font-mono text-[10px] text-slate-400 mt-1">TAP ANY LED COLUMN TO TIME-TRAVEL &amp; INSPECT</p>
+                    </div>
+                    <div class="text-right font-mono">
+                        <span id="weeklyPowerAvg" class="text-sm font-extrabold text-lime block leading-none">00%</span>
+                        <span class="text-[9px] text-slate-500 uppercase">7D_EFFICIENCY</span>
+                    </div>
+                </div>
+
+                <!-- Equalizer Columns + SVG Spline Energy Wave Overlay -->
+                <div class="relative bg-[#07080D] border border-[#1E2235] p-2.5 pt-4">
+                    <!-- SVG Wave Overlay -->
+                    <svg id="telemetryWaveSvg" class="absolute inset-0 w-full h-full pointer-events-none z-20" preserveAspectRatio="none" viewBox="0 0 280 110">
+                        <!-- Dynamic glowing path injected via JS -->
+                    </svg>
+
+                    <!-- 7 Equalizer Columns -->
+                    <div id="equalizerColumnsGrid" class="grid grid-cols-7 gap-2 relative z-10 h-24 items-end">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Equalizer Day Footer Labels -->
+                <div id="equalizerDayFooters" class="grid grid-cols-7 gap-2 mt-2 text-center font-mono text-[10px]">
+                    <!-- Injected via JS -->
+                </div>
+            </section>
+
+            <!-- TACTICAL CATEGORY FILTER SWITCHES -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="categorySwitchBar">
+                <button onclick="setFilterCategory('ALL')" data-cat="ALL" class="te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-lime text-obsidian border-white whitespace-nowrap">
+                    [ALL_MODS]
+                </button>
+                <button onclick="setFilterCategory('CORE_CODE')" data-cat="CORE_CODE" class="te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
+                    [CORE_CODE]
+                </button>
+                <button onclick="setFilterCategory('BIOS_FIT')" data-cat="BIOS_FIT" class="te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
+                    [BIOS_FIT]
+                </button>
+                <button onclick="setFilterCategory('GIT_OPS')" data-cat="GIT_OPS" class="te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
+                    [GIT_OPS]
+                </button>
+                <button onclick="setFilterCategory('ACAD_LAB')" data-cat="ACAD_LAB" class="te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap">
+                    [ACAD_LAB]
+                </button>
+            </div>
+
+            <!-- HARDWARE CASSETTE HABIT MODULES LIST -->
+            <div class="flex items-center justify-between px-0.5 font-mono text-[10px] text-slate-400">
+                <span>ACTIVE_QUEST_CASSETTES // TAP SWITCH OR 7D LED</span>
+                <span id="activeModuleCountLabel">05 MODS</span>
+            </div>
+
+            <div id="questCassettesContainer" class="space-y-3.5">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </main>
+
+        <!-- ========================================================== -->
+        <!-- MODE 02: DOT-MATRIX RADAR & SYSTEM TELEMETRY               -->
+        <!-- ========================================================== -->
+        <section id="radarView" class="space-y-4 hidden">
+            <!-- Telemetry KPI Readouts -->
+            <div class="grid grid-cols-3 gap-2.5 font-mono">
+                <div class="hud-chassis p-3">
+                    <span class="text-[9px] text-slate-400 block">TOTAL_XP</span>
+                    <span id="statTotalXp" class="text-lg font-extrabold text-lime mt-0.5 block">0</span>
+                    <span class="text-[8px] text-slate-500">ACCUMULATED</span>
+                </div>
+                <div class="hud-chassis p-3">
+                    <span class="text-[9px] text-slate-400 block">SYNC_LOGS</span>
+                    <span id="statTotalLogs" class="text-lg font-extrabold text-cyan mt-0.5 block">0</span>
+                    <span class="text-[8px] text-slate-500">CHECK-INS</span>
+                </div>
+                <div class="hud-chassis p-3">
+                    <span class="text-[9px] text-slate-400 block">OVERCLOCK</span>
+                    <span id="statOverclockCount" class="text-lg font-extrabold text-cyberOrange mt-0.5 block">0</span>
+                    <span class="text-[8px] text-slate-500">3D+ STREAKS</span>
+                </div>
+            </div>
+
+            <!-- Nothing-OS Style 7-Day Dot-Matrix Heatmap Grid -->
+            <div class="hud-chassis p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <span class="font-mono text-[10px] text-lime font-bold uppercase tracking-wider block">
+                            // DOT_MATRIX_HEATMAP_V2
+                        </span>
+                        <h3 class="font-display text-sm font-bold text-white">7-DAY DIRECT OVERRIDE GRID</h3>
+                    </div>
+                    <span class="font-mono text-[9px] px-2 py-0.5 bg-[#151828] border border-slate-700 text-slate-300">
+                        INTERACTIVE
+                    </span>
+                </div>
+
+                <div id="dotMatrixTable" class="space-y-2 font-mono">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Module Efficiency Diagnostics -->
+            <div class="hud-chassis p-4">
+                <span class="font-mono text-[10px] text-cyan font-bold uppercase tracking-wider block mb-2">
+                    // MODULE_CONSISTENCY_DIAGNOSTICS
+                </span>
+                <div id="diagnosticsLeaderboard" class="space-y-3 font-mono">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- System Factory Reboot Card -->
+            <div class="hud-chassis p-3.5 border-cyberOrange/50 flex items-center justify-between">
+                <div class="font-mono">
+                    <div class="text-xs font-bold text-cyberOrange uppercase">FACTORY_REBOOT // DEFAULT_QUESTS</div>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Restore pre-loaded Dev &amp; Hunter quests</p>
+                </div>
+                <button onclick="openRebootModal()" class="te-btn px-3 py-2 bg-cyberOrange/20 border-cyberOrange text-cyberOrange font-mono text-[10px] font-extrabold uppercase">
+                    REBOOT_SYS
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- THUMB-ZONE FLOATING HARDWARE DOCK (BOTTOM NAVIGATION)          -->
+    <!-- ============================================================== -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 px-3 pb-3 pt-1 pointer-events-none">
+        <div class="max-w-md mx-auto bg-[#0B0C13]/95 backdrop-blur-md border-2 border-[#2D324D] shadow-[0_8px_30px_rgba(0,0,0,0.85)] p-2 pointer-events-auto">
+            <div class="grid grid-cols-4 gap-1.5 font-mono">
+                <!-- Mode 01: Quest Deck -->
+                <button onclick="switchHudMode('deck')" id="dockBtnDeck"
+                    class="te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-lime text-obsidian border-white font-extrabold">
+                    <span class="text-[9px] tracking-tighter opacity-80">MODE_01</span>
+                    <span class="text-[11px] tracking-tight mt-0.5">[QUEST_DECK]</span>
+                </button>
+
+                <!-- Mode 02: Matrix Radar -->
+                <button onclick="switchHudMode('radar')" id="dockBtnRadar"
+                    class="te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-[#141726] text-slate-300 border-[#2E334D] font-bold">
+                    <span class="text-[9px] tracking-tighter text-slate-500">MODE_02</span>
+                    <span class="text-[11px] tracking-tight mt-0.5">[MATRIX_RDR]</span>
+                </button>
+
+                <!-- Forge New Module -->
+                <button onclick="openForgeModal()"
+                    class="te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-cyberOrange text-obsidian border-white font-extrabold">
+                    <span class="text-[9px] tracking-tighter opacity-90">FORGE</span>
+                    <span class="text-[11px] tracking-tight mt-0.5">[+ NEW_MOD]</span>
+                </button>
+
+                <!-- SFX Toggle -->
+                <button onclick="toggleAudioSfx()" id="dockBtnSfx"
+                    class="te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-[#141726] text-cyan border-cyan/50 font-bold">
+                    <span class="text-[9px] tracking-tighter text-slate-400">AUDIO_SYNTH</span>
+                    <span id="dockSfxLabel" class="text-[11px] tracking-tight mt-0.5">[SFX: ON]</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================================== -->
+    <!-- FORGE / EDIT HABIT MODULE MODAL                                -->
+    <!-- ============================================================== -->
+    <div id="forgeModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="w-full max-w-md hud-chassis-lime bg-[#0B0C14] p-5 animate-pop">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#25293E] font-mono">
+                <div>
+                    <span class="text-[10px] text-lime block">// MODULE_FABRICATOR_V2</span>
+                    <h3 id="forgeModalTitle" class="font-display text-lg font-extrabold text-white">FORGE NEW QUEST MODULE</h3>
+                </div>
+                <button onclick="closeForgeModal()" class="te-btn px-2.5 py-1 bg-[#171A29] text-slate-300 text-xs font-mono">
+                    [ESC]
+                </button>
+            </div>
+
+            <form id="forgeForm" onsubmit="saveHabitModule(event)" class="space-y-3.5 font-mono">
+                <input type="hidden" id="forgeHabitId" value="">
+
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1">QUEST_DESIGNATION (TITLE)</label>
+                    <input type="text" id="forgeNameInput" required maxlength="38" placeholder="e.g., Rust / Linux Kernel Lab"
+                        class="w-full px-3.5 py-2.5 bg-[#07080D] border border-[#2C314A] text-white text-xs focus:outline-none focus:border-lime">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1">PROTOCOL_SPEC (TARGET SUBTITLE)</label>
+                    <input type="text" id="forgeSpecInput" maxlength="44" placeholder="e.g., 90m zero-phone execution block"
+                        class="w-full px-3.5 py-2.5 bg-[#07080D] border border-[#2C314A] text-white text-xs focus:outline-none focus:border-lime">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">CATEGORY_TAG</label>
+                        <select id="forgeCategoryInput" class="w-full px-3 py-2.5 bg-[#07080D] border border-[#2C314A] text-white text-xs focus:outline-none focus:border-lime">
+                            <option value="CORE_CODE">[CORE_CODE]</option>
+                            <option value="BIOS_FIT">[BIOS_FIT]</option>
+                            <option value="GIT_OPS">[GIT_OPS]</option>
+                            <option value="ACAD_LAB">[ACAD_LAB]</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">XP_BOUNTY_WEIGHT</label>
+                        <select id="forgeXpInput" class="w-full px-3 py-2.5 bg-[#07080D] border border-[#2C314A] text-lime font-bold text-xs focus:outline-none focus:border-lime">
+                            <option value="50">+50 XP [STD]</option>
+                            <option value="60">+60 XP [MOD]</option>
+                            <option value="70">+70 XP [HIGH]</option>
+                            <option value="80">+80 XP [BOSS]</option>
+                            <option value="100">+100 XP [ULTRA]</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Icon & Neon Core Pickers -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">MODULE_GLYPH</label>
+                        <div id="glyphPickerGrid" class="grid grid-cols-4 gap-1 bg-[#07080D] p-1.5 border border-[#2C314A]">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 uppercase mb-1">NEON_CORE_COLOR</label>
+                        <div id="neonPickerGrid" class="grid grid-cols-4 gap-1.5 bg-[#07080D] p-2 border border-[#2C314A] items-center">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex items-center gap-2">
+                    <button type="button" id="deleteModBtn" onclick="deleteCurrentModule()"
+                        class="hidden te-btn px-3.5 py-3 bg-cyberOrange/20 border-cyberOrange text-cyberOrange text-xs font-extrabold uppercase">
+                        SCRAP
+                    </button>
+                    <button type="submit"
+                        class="flex-1 te-btn py-3 bg-lime text-obsidian border-white text-xs font-extrabold uppercase tracking-wider">
+                        COMPILE &amp; DEPLOY MODULE &gt;&gt;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- FACTORY REBOOT CONFIRMATION MODAL                              -->
+    <!-- ============================================================== -->
+    <div id="rebootModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-xs hud-chassis border-cyberOrange p-5 font-mono text-center">
+            <div class="text-cyberOrange text-xs font-extrabold tracking-widest mb-1">// WARNING: MEMORY_PURGE</div>
+            <h4 class="font-display text-base font-extrabold text-white">REBOOT QUEST TELEMETRY?</h4>
+            <p class="text-[11px] text-slate-400 mt-2 mb-5">This will overwrite custom modules and restore the 5 default Hunter / Developer system quests.</p>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="closeRebootModal()" class="te-btn py-2.5 bg-[#161929] text-slate-300 text-xs font-bold">ABORT</button>
+                <button onclick="confirmFactoryReboot()" class="te-btn py-2.5 bg-cyberOrange text-obsidian border-white text-xs font-extrabold">EXECUTE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD SYSTEM TOAST BANNER -->
+    <div id="hudToast" class="fixed top-12 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-[#0E101A] border-2 border-lime text-lime font-mono text-xs font-extrabold shadow-[4px_4px_0px_#000] transition-all duration-200 opacity-0 pointer-events-none -translate-y-3 flex items-center gap-2">
+        <span id="hudToastPrefix">[SYS.OK]</span>
+        <span id="hudToastMsg" class="text-white">QUEST SYNCED // +80 XP</span>
+    </div>
+
+    <script>
+        /*************************************************************************
+         * 1. CONSTANTS, NEON CORES, & HUNTER RANKS
+         *************************************************************************/
+        const STORAGE_KEY = 'cyber_habit_hud_v2';
+        const GLYPH_OPTIONS = ['⚡', '💻', '🏃', '🔥', '🛰️', '🧠', '🛡️', '⚙️'];
+        const NEON_CORES = {
+            lime: {
+                hex: '#CCFF00',
+                badgeBg: 'bg-[#CCFF00]/15',
+                badgeText: 'text-[#CCFF00]',
+                border: 'border-[#CCFF00]',
+                led: 'led-lit-lime',
+                btnOn: 'bg-[#CCFF00] text-[#08080C] border-white shadow-[0_0_16px_rgba(204,255,0,0.45)]'
+            },
+            cyan: {
+                hex: '#00F0FF',
+                badgeBg: 'bg-[#00F0FF]/15',
+                badgeText: 'text-[#00F0FF]',
+                border: 'border-[#00F0FF]',
+                led: 'led-lit-cyan',
+                btnOn: 'bg-[#00F0FF] text-[#08080C] border-white shadow-[0_0_16px_rgba(0,240,255,0.45)]'
+            },
+            orange: {
+                hex: '#FF4D00',
+                badgeBg: 'bg-[#FF4D00]/15',
+                badgeText: 'text-[#FF4D00]',
+                border: 'border-[#FF4D00]',
+                led: 'led-lit-orange',
+                btnOn: 'bg-[#FF4D00] text-[#08080C] border-white shadow-[0_0_16px_rgba(255,77,0,0.45)]'
+            },
+            violet: {
+                hex: '#9D4EDD',
+                badgeBg: 'bg-[#9D4EDD]/20',
+                badgeText: 'text-[#C77DFF]',
+                border: 'border-[#9D4EDD]',
+                led: 'led-lit-violet',
+                btnOn: 'bg-[#9D4EDD] text-white border-white shadow-[0_0_16px_rgba(157,78,221,0.5)]'
+            }
+        };
+
+        const HUNTER_RANKS = [
+            { minLvl: 1, title: '[E-RANK INITIATE]' },
+            { minLvl: 2, title: '[D-RANK SCRIPTER]' },
+            { minLvl: 3, title: '[C-RANK COMPILER]' },
+            { minLvl: 4, title: '[B-RANK CYBER-KNIGHT]' },
+            { minLvl: 6, title: '[A-RANK SYS-LORD]' },
+            { minLvl: 8, title: '[S-RANK ARCHITECT]' }
+        ];
+
+        const XP_PER_LEVEL = 250;
+
+        // Date formatting helpers
+        function toDateKey(d) {
+            const yr = d.getFullYear();
+            const mo = String(d.getMonth() + 1).padStart(2, '0');
+            const da = String(d.getDate()).padStart(2, '0');
+            return `${yr}-${mo}-${da}`;
+        }
+
+        function get7DayChronoWindow() {
+            const list = [];
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - i);
+                list.push({
+                    dateObj: d,
+                    key: toDateKey(d),
+                    shortDay: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    narrowDay: d.toLocaleDateString('en-US', { weekday: 'narrow' }).toUpperCase(),
+                    dayNum: String(d.getDate()).padStart(2, '0'),
+                    dotDate: `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`,
+                    isToday: i === 0
+                });
+            }
+            return list;
+        }
+
+        const todayKey = toDateKey(new Date());
+        let selectedDateKey = todayKey;
+        let activeCategory = 'ALL';
+        let sfxEnabled = true;
+        let scanlinesEnabled = true;
+        let selectedGlyph = '💻';
+        let selectedNeon = 'lime';
+        let lastKnownLevel = 1;
+        let quests = [];
+
+        /*************************************************************************
+         * 2. PRE-LOADED RELATABLE HUNTER / DEV QUESTS
+         *************************************************************************/
+        function getFactoryQuests() {
+            const makeHistory = (daysAgoList) => {
+                const rec = {};
+                daysAgoList.forEach(ago => {
+                    const d = new Date();
+                    d.setHours(0, 0, 0, 0);
+                    d.setDate(d.getDate() - ago);
+                    rec[toDateKey(d)] = true;
+                });
+                return rec;
+            };
+
+            return [
+                {
+                    id: 'mod-dsa',
+                    name: 'DSA & C++ Grind',
+                    spec: 'Solve 2 LeetCode / GFG + pointer memory drills',
+                    category: 'CORE_CODE',
+                    xp: 80,
+                    glyph: '💻',
+                    neon: 'lime',
+                    logs: makeHistory([0, 1, 2, 3, 4, 5, 7])
+                },
+                {
+                    id: 'mod-run',
+                    name: 'Morning Run / Mobility',
+                    spec: '3km high-cadence run + thoracic decompression',
+                    category: 'BIOS_FIT',
+                    xp: 60,
+                    glyph: '🏃',
+                    neon: 'cyan',
+                    logs: makeHistory([0, 1, 2, 4, 5, 6])
+                },
+                {
+                    id: 'mod-git',
+                    name: 'GitHub Commit / Build',
+                    spec: 'Ship production commits or build side-project module',
+                    category: 'GIT_OPS',
+                    xp: 70,
+                    glyph: '🛰️',
+                    neon: 'orange',
+                    logs: makeHistory([0, 1, 3, 4, 5, 6])
+                },
+                {
+                    id: 'mod-btech',
+                    name: 'B.Tech Lab & Notes',
+                    spec: 'Complete OS / DBMS lab records & lecture synthesis',
+                    category: 'ACAD_LAB',
+                    xp: 50,
+                    glyph: '⚙️',
+                    neon: 'violet',
+                    logs: makeHistory([1, 2, 3, 5, 6])
+                },
+                {
+                    id: 'mod-deep',
+                    name: 'Deep Work / No Doomscroll',
+                    spec: '90m zero-phone monochrome focus protocol',
+                    category: 'CORE_CODE',
+                    xp: 60,
+                    glyph: '🧠',
+                    neon: 'lime',
+                    logs: makeHistory([0, 2, 3, 4, 6])
+                }
+            ];
+        }
+
+        function loadSystemState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        quests = parsed;
+                        lastKnownLevel = computePlayerStats().level;
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('Storage read fallback:', err);
+            }
+            quests = getFactoryQuests();
+            saveSystemState();
+            lastKnownLevel = computePlayerStats().level;
+        }
+
+        function saveSystemState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(quests));
+            } catch (err) {
+                console.warn('Storage save error:', err);
+            }
+        }
+
+        /*************************************************************************
+         * 3. MECHANICAL WEB AUDIO SYNTHESIZER & COORDINATE SPARK PARTICLES
+         *************************************************************************/
+        let audioCtx = null;
+        function ensureAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playMechSound(type) {
+            if (!sfxEnabled) return;
+            try {
+                ensureAudio();
+                const now = audioCtx.currentTime;
+
+                if (type === 'engage') {
+                    // Mechanical click + arcade power-up arpeggio
+                    const osc1 = audioCtx.createOscillator();
+                    const gain1 = audioCtx.createGain();
+                    osc1.type = 'square';
+                    osc1.frequency.setValueAtTime(190, now);
+                    osc1.frequency.exponentialRampToValueAtTime(620, now + 0.065);
+                    osc1.frequency.setValueAtTime(880, now + 0.07);
+                    osc1.frequency.exponentialRampToValueAtTime(1320, now + 0.16);
+
+                    gain1.gain.setValueAtTime(0.14, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+
+                    osc1.connect(gain1);
+                    gain1.connect(audioCtx.destination);
+                    osc1.start(now);
+                    osc1.stop(now + 0.17);
+                } else if (type === 'disengage') {
+                    // Low mechanical latch release
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.09);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.095);
+                } else if (type === 'levelup') {
+                    // Solo Leveling style fanfare synth chord
+                    const freqs = [440, 554.37, 659.25, 880, 1108.73];
+                    freqs.forEach((f, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'triangle';
+                        const start = now + idx * 0.055;
+                        o.frequency.setValueAtTime(f, start);
+                        g.gain.setValueAtTime(0.12, start);
+                        g.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.start(start);
+                        o.stop(start + 0.36);
+                    });
+                } else if (type === 'tap') {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(800, now);
+                    g.gain.setValueAtTime(0.05, now);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.start(now);
+                    o.stop(now + 0.035);
+                }
+            } catch (e) {
+                // Ignore audio blocks
+            }
+        }
+
+        // Neon Spark Particle System on Tap Coordinates
+        const sparkCanvas = document.getElementById('sparkCanvas');
+        const sCtx = sparkCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeSparkCanvas() {
+            sparkCanvas.width = window.innerWidth;
+            sparkCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeSparkCanvas);
+        resizeSparkCanvas();
+
+        function spawnSparks(x, y, colorHex = '#CCFF00', count = 22) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 6.5;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1.2,
+                    size: 2 + Math.random() * 3.5,
+                    color: i % 3 === 0 ? '#FFFFFF' : colorHex,
+                    alpha: 1,
+                    decay: 0.025 + Math.random() * 0.025
+                });
+            }
+        }
+
+        function animateSparks() {
+            sCtx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.18; // gravity
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                sCtx.save();
+                sCtx.globalAlpha = p.alpha;
+                sCtx.fillStyle = p.color;
+                sCtx.shadowColor = p.color;
+                sCtx.shadowBlur = 8;
+                sCtx.fillRect(p.x, p.y, p.size, p.size);
+                sCtx.restore();
+            }
+            requestAnimationFrame(animateSparks);
+        }
+        requestAnimationFrame(animateSparks);
+
+        /*************************************************************************
+         * 4. RPG STREAK & XP ENGINE
+         *************************************************************************/
+        function calculateHabitStreak(quest) {
+            let streak = 0;
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+
+            if (!quest.logs[toDateKey(d)]) {
+                d.setDate(d.getDate() - 1);
+                if (!quest.logs[toDateKey(d)]) return 0;
+            }
+            while (quest.logs[toDateKey(d)]) {
+                streak++;
+                d.setDate(d.getDate() - 1);
+            }
+            return streak;
+        }
+
+        function computePlayerStats() {
+            let totalXp = 0;
+            let totalLogs = 0;
+            let maxStreak = 0;
+            let overclockStreaks = 0;
+
+            quests.forEach(q => {
+                const count = Object.keys(q.logs || {}).length;
+                totalLogs += count;
+                totalXp += count * (Number(q.xp) || 50);
+                const s = calculateHabitStreak(q);
+                if (s > maxStreak) maxStreak = s;
+                if (s >= 3) overclockStreaks++;
+            });
+
+            const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
+            const currentLevelXp = totalXp % XP_PER_LEVEL;
+            let rankTitle = HUNTER_RANKS[0].title;
+            for (const r of HUNTER_RANKS) {
+                if (level >= r.minLvl) rankTitle = r.title;
+            }
+
+            return {
+                totalXp,
+                totalLogs,
+                level,
+                currentLevelXp,
+                rankTitle,
+                maxStreak,
+                overclockStreaks
+            };
+        }
+
+        /*************************************************************************
+         * 5. MASTER HUD RENDER PIPELINE
+         *************************************************************************/
+        function renderHud() {
+            const chronoWindow = get7DayChronoWindow();
+            const stats = computePlayerStats();
+
+            renderPlayerHeader(stats, chronoWindow);
+            renderChronoStrip(chronoWindow);
+            renderEqualizerTelemetry(chronoWindow);
+            renderQuestCassettes(chronoWindow);
+            renderMatrixRadarView(chronoWindow, stats);
+            lucide.createIcons();
+        }
+
+        function renderPlayerHeader(stats, chronoWindow) {
+            document.getElementById('playerLevelNum').textContent = String(stats.level).padStart(2, '0');
+            document.getElementById('xpCounterText').textContent = `${String(stats.currentLevelXp).padStart(3, '0')} / ${XP_PER_LEVEL} XP`;
+            document.getElementById('rankBadge').textContent = stats.rankTitle;
+            document.getElementById('totalStreakTop').textContent = `⚡ MAX_STREAK: ${stats.maxStreak}D`;
+
+            // 14-Segment Hardware XP Capacitor
+            const totalSegments = 14;
+            const litSegments = Math.round((stats.currentLevelXp / XP_PER_LEVEL) * totalSegments);
+            const segBar = document.getElementById('xpSegmentedBar');
+            let segHtml = '';
+            for (let i = 0; i < totalSegments; i++) {
+                const isLit = i < litSegments;
+                segHtml += `<div class="flex-1 h-full transition-all duration-300 ${
+                    isLit ? 'bg-lime shadow-[0_0_6px_#CCFF00]' : 'bg-[#171A29]'
+                }"></div>`;
+            }
+            segBar.innerHTML = segHtml;
+
+            // Radial Reactor Sync Gauge for Selected Date
+            const totalQuests = quests.length;
+            const doneCount = quests.filter(q => !!q.logs[selectedDateKey]).length;
+            const pct = totalQuests > 0 ? Math.round((doneCount / totalQuests) * 100) : 0;
+
+            const circumference = 169.6; // 2 * pi * 27
+            const offset = circumference - (pct / 100) * circumference;
+            const gaugeCircle = document.getElementById('reactorGaugeCircle');
+            gaugeCircle.style.strokeDashoffset = offset;
+            gaugeCircle.style.stroke = pct === 100 ? '#00F0FF' : '#CCFF00';
+
+            document.getElementById('dailySyncPercent').textContent = `${pct}%`;
+            document.getElementById('dailySyncFraction').textContent = `${doneCount}/${totalQuests}`;
+
+            const statusLabel = document.getElementById('syncStatusLabel');
+            const broadcast = document.getElementById('systemBroadcastText');
+            if (pct === 100 && totalQuests > 0) {
+                statusLabel.textContent = 'OVERDRIVE';
+                statusLabel.className = 'font-mono text-[8px] text-cyan font-bold uppercase mt-1 tracking-wider';
+                broadcast.textContent = 'ALL DAILY QUESTS CLEARED // BONUS S-RANK SYNC ACTIVE';
+            } else if (pct >= 50) {
+                statusLabel.textContent = 'SYNCING...';
+                statusLabel.className = 'font-mono text-[8px] text-lime uppercase mt-1 tracking-wider';
+                broadcast.textContent = `${totalQuests - doneCount} MODULES REMAINING FOR FULL REACTOR CHARGE`;
+            } else {
+                statusLabel.textContent = 'STANDBY';
+                statusLabel.className = 'font-mono text-[8px] text-cyberOrange uppercase mt-1 tracking-wider';
+                broadcast.textContent = 'SYSTEM ALERT: ENGAGE DAILY QUEST SWITCHES TO FARM XP';
+            }
+
+            // Return to Today Button
+            const rtnBtn = document.getElementById('returnTodayBtn');
+            const selObj = chronoWindow.find(d => d.key === selectedDateKey);
+            const readoutEl = document.getElementById('selectedDateReadout');
+            if (selectedDateKey === todayKey) {
+                rtnBtn.classList.add('hidden');
+                readoutEl.textContent = `${selObj ? selObj.dotDate : ''} [TODAY_ACTIVE]`;
+            } else {
+                rtnBtn.classList.remove('hidden');
+                readoutEl.textContent = `${selObj ? selObj.dotDate : ''} [TIME_TRAVEL]`;
+            }
+        }
+
+        function renderChronoStrip(chronoWindow) {
+            const container = document.getElementById('chronoStripGrid');
+            const totalQuests = quests.length || 1;
+
+            container.innerHTML = chronoWindow.map(day => {
+                const isSelected = day.key === selectedDateKey;
+                const doneCount = quests.filter(q => !!q.logs[day.key]).length;
+                const ratio = Math.round((doneCount / totalQuests) * 100);
+
+                // Mini 3-LED status indicator on each day key
+                const led1 = ratio >= 25 ? 'bg-lime' : 'bg-slate-800';
+                const led2 = ratio >= 60 ? 'bg-lime' : 'bg-slate-800';
+                const led3 = ratio === 100 ? 'bg-cyan shadow-[0_0_5px_#00F0FF]' : 'bg-slate-800';
+
+                return `
+                    <button onclick="selectChronoDate('${day.key}')"
+                        class="te-btn py-2 px-1 flex flex-col items-center justify-between font-mono transition ${
+                            isSelected
+                                ? 'bg-[#1A1F33] border-lime text-white shadow-[0_0_12px_rgba(204,255,0,0.25)]'
+                                : day.isToday
+                                ? 'bg-[#121522] border-cyan/50 text-slate-200'
+                                : 'bg-[#0C0E17] border-[#22263A] text-slate-400 hover:text-white'
+                        }">
+                        <span class="text-[9px] font-bold tracking-tighter ${isSelected ? 'text-lime' : 'text-slate-500'}">
+                            ${day.shortDay}
+                        </span>
+                        <span class="text-sm font-extrabold my-0.5 ${isSelected ? 'text-white' : 'text-slate-200'}">
+                            ${day.dayNum}
+                        </span>
+                        <div class="flex items-center gap-0.5 mt-1">
+                            <span class="w-1.5 h-1 ${led1}"></span>
+                            <span class="w-1.5 h-1 ${led2}"></span>
+                            <span class="w-1.5 h-1 ${led3}"></span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        /*************************************************************************
+         * 6. EQUALIZER / POWER CORE TELEMETRY 7-DAY STREAK CHART
+         *************************************************************************/
+        function renderEqualizerTelemetry(chronoWindow) {
+            const colsContainer = document.getElementById('equalizerColumnsGrid');
+            const footersContainer = document.getElementById('equalizerDayFooters');
+            const waveSvg = document.getElementById('telemetryWaveSvg');
+
+            const totalQuests = quests.length;
+            const segmentsPerCol = Math.max(totalQuests, 5);
+            let sumPct = 0;
+            const wavePoints = [];
+
+            colsContainer.innerHTML = chronoWindow.map((day, idx) => {
+                const doneCount = quests.filter(q => !!q.logs[day.key]).length;
+                const pct = totalQuests > 0 ? Math.round((doneCount / totalQuests) * 100) : 0;
+                sumPct += pct;
+
+                // Calculate SVG coordinate for spline overlay (viewBox 280 x 110)
+                const xCoord = 20 + idx * 40;
+                const yCoord = 96 - (pct / 100) * 74;
+                wavePoints.push({ x: xCoord, y: yCoord, pct, isSelected: day.key === selectedDateKey });
+
+                // Build segmented LED stack from top to bottom
+                const litBars = Math.round((pct / 100) * segmentsPerCol);
+                let stackHtml = '';
+                for (let s = segmentsPerCol - 1; s >= 0; s--) {
+                    const isLit = s < litBars;
+                    const colorCls = pct === 100
+                        ? 'led-lit-cyan'
+                        : s >= segmentsPerCol - 1
+                        ? 'led-lit-orange'
+                        : 'led-lit-lime';
+                    stackHtml += `<div class="w-full flex-1 ${isLit ? colorCls : 'bg-[#151826]'}"></div>`;
+                }
+
+                const isSelected = day.key === selectedDateKey;
+                return `
+                    <div onclick="selectChronoDate('${day.key}')"
+                        class="h-full flex flex-col justify-end cursor-pointer group">
+                        <div class="text-center font-mono text-[9px] mb-1 ${
+                            isSelected ? 'text-lime font-extrabold' : 'text-slate-500 group-hover:text-slate-300'
+                        }">${doneCount}/${totalQuests}</div>
+                        <div class="w-full h-16 p-1 bg-[#0B0C14] border ${
+                            isSelected ? 'border-lime shadow-[0_0_10px_rgba(204,255,0,0.25)]' : 'border-[#222638]'
+                        } flex flex-col gap-1">
+                            ${stackHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            footersContainer.innerHTML = chronoWindow.map(day => {
+                const isSelected = day.key === selectedDateKey;
+                return `
+                    <button onclick="selectChronoDate('${day.key}')"
+                        class="py-0.5 truncate ${
+                            isSelected
+                                ? 'bg-lime text-obsidian font-extrabold'
+                                : day.isToday
+                                ? 'text-cyan font-bold'
+                                : 'text-slate-500 hover:text-slate-300'
+                        }">
+                        ${day.isToday ? 'TDY' : day.shortDay}
+                    </button>
+                `;
+            }).join('');
+
+            const avg = Math.round(sumPct / 7);
+            document.getElementById('weeklyPowerAvg').textContent = `${String(avg).padStart(2, '0')}%`;
+
+            // Draw smooth energy polyline + nodes on SVG overlay
+            if (wavePoints.length > 0) {
+                let pathD = `M ${wavePoints[0].x} ${wavePoints[0].y}`;
+                for (let i = 1; i < wavePoints.length; i++) {
+                    const prev = wavePoints[i - 1];
+                    const curr = wavePoints[i];
+                    const midX = (prev.x + curr.x) / 2;
+                    pathD += ` C ${midX} ${prev.y}, ${midX} ${curr.y}, ${curr.x} ${curr.y}`;
+                }
+
+                const circlesHtml = wavePoints.map(pt => `
+                    <circle cx="${pt.x}" cy="${pt.y}" r="${pt.isSelected ? 4.5 : 3}"
+                        fill="${pt.isSelected ? '#00F0FF' : '#CCFF00'}"
+                        stroke="#08080C" stroke-width="1.5" />
+                `).join('');
+
+                waveSvg.innerHTML = `
+                    <defs>
+                        <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="2.5" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <path d="${pathD}" fill="none" stroke="#00F0FF" stroke-width="2" stroke-opacity="0.85" filter="url(#neonGlow)" />
+                    ${circlesHtml}
+                `;
+            }
+        }
+
+        /*************************************************************************
+         * 7. HARDWARE CASSETTE QUEST MODULES
+         *************************************************************************/
+        function renderQuestCassettes(chronoWindow) {
+            const container = document.getElementById('questCassettesContainer');
+            const filtered = activeCategory === 'ALL'
+                ? quests
+                : quests.filter(q => q.category === activeCategory);
+
+            document.getElementById('activeModuleCountLabel').textContent = `${String(filtered.length).padStart(2, '0')} MODS`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="hud-chassis p-6 text-center font-mono">
+                        <div class="text-cyberOrange text-xs font-bold mb-1">// NULL_SECTOR</div>
+                        <p class="text-xs text-slate-400">NO MODULES DEPLOYED IN [${activeCategory}]. TAP [+ NEW_MOD] BELOW.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map((quest, index) => {
+                const core = NEON_CORES[quest.neon] || NEON_CORES.lime;
+                const isSyncedToday = !!quest.logs[selectedDateKey];
+                const streak = calculateHabitStreak(quest);
+                const weekHits = chronoWindow.reduce((acc, d) => acc + (quest.logs[d.key] ? 1 : 0), 0);
+
+                // 7-Day Integrated Hardware LED Pill Strip
+                const pillStripHtml = chronoWindow.map(day => {
+                    const hit = !!quest.logs[day.key];
+                    const isFocusedDay = day.key === selectedDateKey;
+                    return `
+                        <button onclick="toggleQuestLog('${quest.id}', '${day.key}', event)"
+                            class="py-1.5 px-0.5 border font-mono flex flex-col items-center justify-center transition active:scale-90 ${
+                                hit
+                                    ? `${core.btnOn} font-extrabold`
+                                    : isFocusedDay
+                                    ? 'bg-[#191D2E] border-slate-500 text-slate-300'
+                                    : 'bg-[#090A10] border-[#1F2336] text-slate-500 hover:border-slate-600'
+                            }">
+                            <span class="text-[8px] leading-none opacity-80">${day.narrowDay}</span>
+                            <span class="text-[10px] leading-none mt-1 font-bold">${hit ? 'ON' : day.dayNum}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                return `
+                    <article class="hud-chassis p-3.5 transition-all ${
+                        isSyncedToday ? `border-l-4 ${core.border}` : ''
+                    }">
+                        <!-- Top Telemetry Micro-Bar -->
+                        <div class="flex items-center justify-between font-mono text-[9px] pb-2 mb-2.5 border-b border-[#1E2234]">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-slate-500">MOD_0${index + 1}</span>
+                                <span class="px-1.5 py-0.5 ${core.badgeBg} ${core.badgeText} font-bold">
+                                    [${quest.category}]
+                                </span>
+                                <span class="px-1.5 py-0.5 bg-[#161928] text-amber-400 font-bold">
+                                    🔥 ${streak}D_STREAK
+                                </span>
+                            </div>
+                            <button onclick="openForgeModal('${quest.id}')" class="text-slate-500 hover:text-white px-1">
+                                [CFG]
+                            </button>
+                        </div>
+
+                        <!-- Main Module Body + Tactile Launch Switch -->
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                                <button onclick="openForgeModal('${quest.id}')"
+                                    class="w-11 h-11 bg-[#090A10] border border-[#282D46] flex items-center justify-center text-xl flex-shrink-0">
+                                    ${quest.glyph}
+                                </button>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="font-display text-base font-extrabold tracking-tight truncate ${
+                                        isSyncedToday ? 'text-lime' : 'text-white'
+                                    }">
+                                        ${escapeHtml(quest.name)}
+                                    </h4>
+                                    <p class="font-mono text-[11px] text-slate-400 truncate mt-0.5">
+                                        ${escapeHtml(quest.spec)}
+                                    </p>
+                                    <div class="flex items-center gap-2 mt-1.5 font-mono text-[10px]">
+                                        <span class="${core.badgeText} font-extrabold">+${quest.xp} XP</span>
+                                        <span class="text-slate-600">|</span>
+                                        <span class="text-slate-400">7D_LOAD: ${weekHits}/7</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Teenage Engineering Style Mechanical Trigger Switch -->
+                            <button onclick="toggleQuestLog('${quest.id}', '${selectedDateKey}', event)"
+                                class="te-btn w-24 py-2.5 px-2 flex flex-col items-center justify-center flex-shrink-0 font-mono ${
+                                    isSyncedToday ? 'te-trigger-on' : 'te-trigger-off'
+                                }">
+                                <span class="text-[8px] tracking-widest uppercase opacity-80">
+                                    ${isSyncedToday ? 'STATUS_OK' : 'ENGAGE_SW'}
+                                </span>
+                                <span class="text-xs font-extrabold tracking-tight mt-0.5">
+                                    ${isSyncedToday ? 'SYNCED ✓' : '[LAUNCH]'}
+                                </span>
+                            </button>
+                        </div>
+
+                        <!-- Integrated 7-Day Hardware LED Pill Strip -->
+                        <div class="mt-3 pt-2.5 border-t border-dashed border-[#1E2235]">
+                            <div class="grid grid-cols-7 gap-1">
+                                ${pillStripHtml}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        /*************************************************************************
+         * 8. MATRIX RADAR & DIAGNOSTICS VIEW
+         *************************************************************************/
+        function renderMatrixRadarView(chronoWindow, stats) {
+            document.getElementById('statTotalXp').textContent = stats.totalXp;
+            document.getElementById('statTotalLogs').textContent = stats.totalLogs;
+            document.getElementById('statOverclockCount').textContent = stats.overclockStreaks;
+
+            // Dot-Matrix 7-Day Table
+            const matrixEl = document.getElementById('dotMatrixTable');
+            const headerHtml = `
+                <div class="grid grid-cols-12 gap-1 text-[9px] text-slate-500 pb-1 border-b border-[#22263A]">
+                    <div class="col-span-5">MODULE_ID</div>
+                    ${chronoWindow.map(d => `<div class="col-span-1 text-center ${d.isToday ? 'text-cyan font-bold' : ''}">${d.narrowDay}</div>`).join('')}
+                </div>
+            `;
+
+            const rowsHtml = quests.map(q => {
+                const core = NEON_CORES[q.neon] || NEON_CORES.lime;
+                const cells = chronoWindow.map(d => {
+                    const hit = !!q.logs[d.key];
+                    return `
+                        <button onclick="toggleQuestLog('${q.id}', '${d.key}', event)"
+                            class="col-span-1 aspect-square border border-[#23273E] flex items-center justify-center text-[9px] font-bold transition ${
+                                hit ? `${core.led} text-obsidian border-white` : 'bg-[#08090F] text-slate-700 hover:border-slate-600'
+                            }">
+                            ${hit ? '■' : '·'}
+                        </button>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="grid grid-cols-12 gap-1 items-center py-1">
+                        <div class="col-span-5 truncate text-[11px] text-slate-200 pr-1 flex items-center gap-1">
+                            <span>${q.glyph}</span>
+                            <span class="truncate">${escapeHtml(q.name)}</span>
+                        </div>
+                        ${cells}
+                    </div>
+                `;
+            }).join('');
+
+            matrixEl.innerHTML = headerHtml + rowsHtml;
+
+            // Diagnostics Leaderboard
+            const diagEl = document.getElementById('diagnosticsLeaderboard');
+            const sorted = [...quests].sort((a, b) => {
+                const aHits = chronoWindow.filter(d => !!a.logs[d.key]).length;
+                const bHits = chronoWindow.filter(d => !!b.logs[d.key]).length;
+                return bHits - aHits;
+            });
+
+            diagEl.innerHTML = sorted.map(q => {
+                const hits = chronoWindow.filter(d => !!q.logs[d.key]).length;
+                const pct = Math.round((hits / 7) * 100);
+                const streak = calculateHabitStreak(q);
+                const core = NEON_CORES[q.neon] || NEON_CORES.lime;
+
+                return `
+                    <div>
+                        <div class="flex items-center justify-between text-[11px] mb-1">
+                            <span class="text-white font-bold truncate">${q.glyph} ${escapeHtml(q.name)}</span>
+                            <span class="${core.badgeText}">${pct}% // 🔥${streak}D</span>
+                        </div>
+                        <div class="w-full h-2 bg-[#07080D] border border-[#23273E] p-0.5">
+                            <div class="h-full ${core.led} transition-all duration-500" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /*************************************************************************
+         * 9. INTERACTION HANDLERS (TOGGLE LOGS, TIME TRAVEL, LEVEL UP)
+         *************************************************************************/
+        function toggleQuestLog(questId, dateKey, event) {
+            if (event) event.stopPropagation();
+            const quest = quests.find(q => q.id === questId);
+            if (!quest) return;
+
+            const core = NEON_CORES[quest.neon] || NEON_CORES.lime;
+            const x = event && event.clientX ? event.clientX : window.innerWidth / 2;
+            const y = event && event.clientY ? event.clientY : window.innerHeight / 2;
+
+            const wasDone = !!quest.logs[dateKey];
+            if (wasDone) {
+                delete quest.logs[dateKey];
+                playMechSound('disengage');
+                showHudToast('[SYS.UNLINK]', `${quest.name} // -${quest.xp} XP`);
+            } else {
+                quest.logs[dateKey] = true;
+                playMechSound('engage');
+                spawnSparks(x, y, core.hex, 26);
+
+                // Tactile Screen Bump
+                const wrap = document.getElementById('mainHudWrapper');
+                wrap.classList.remove('shake-bump');
+                void wrap.offsetWidth;
+                wrap.classList.add('shake-bump');
+
+                showHudToast('[SYNC.OK]', `${quest.name} // +${quest.xp} XP`);
+            }
+
+            saveSystemState();
+
+            // Check for RPG Level Up
+            const newStats = computePlayerStats();
+            if (newStats.level > lastKnownLevel) {
+                playMechSound('levelup');
+                spawnSparks(window.innerWidth / 2, 120, '#00F0FF', 45);
+                const body = document.getElementById('appBody');
+                body.classList.add('level-glitch');
+                setTimeout(() => body.classList.remove('level-glitch'), 500);
+                showHudToast('[LEVEL UP!]', `PROMOTED TO LVL.${newStats.level} ${newStats.rankTitle}`);
+            }
+            lastKnownLevel = newStats.level;
+
+            renderHud();
+        }
+
+        function selectChronoDate(dateKey) {
+            playMechSound('tap');
+            selectedDateKey = dateKey;
+            renderHud();
+        }
+
+        function selectToday() {
+            playMechSound('tap');
+            selectedDateKey = todayKey;
+            renderHud();
+            showHudToast('[CHRONO]', 'RETURNED TO ACTIVE PRESENT DAY');
+        }
+
+        function setFilterCategory(cat) {
+            playMechSound('tap');
+            activeCategory = cat;
+            document.querySelectorAll('#categorySwitchBar button').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = 'te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-lime text-obsidian border-white whitespace-nowrap';
+                } else {
+                    btn.className = 'te-btn px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-[#121420] text-slate-300 whitespace-nowrap';
+                }
+            });
+            renderHud();
+        }
+
+        function switchHudMode(mode) {
+            playMechSound('tap');
+            const deckView = document.getElementById('deckView');
+            const radarView = document.getElementById('radarView');
+            const btnDeck = document.getElementById('dockBtnDeck');
+            const btnRadar = document.getElementById('dockBtnRadar');
+
+            if (mode === 'deck') {
+                deckView.classList.remove('hidden');
+                radarView.classList.add('hidden');
+                btnDeck.className = 'te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-lime text-obsidian border-white font-extrabold';
+                btnRadar.className = 'te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-[#141726] text-slate-300 border-[#2E334D] font-bold';
+            } else {
+                deckView.classList.add('hidden');
+                radarView.classList.remove('hidden');
+                btnRadar.className = 'te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-lime text-obsidian border-white font-extrabold';
+                btnDeck.className = 'te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-[#141726] text-slate-300 border-[#2E334D] font-bold';
+            }
+        }
+
+        function toggleAudioSfx() {
+            sfxEnabled = !sfxEnabled;
+            const lbl = document.getElementById('dockSfxLabel');
+            const btn = document.getElementById('dockBtnSfx');
+            lbl.textContent = sfxEnabled ? '[SFX: ON]' : '[SFX: MUTE]';
+            btn.className = sfxEnabled
+                ? 'te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-[#141726] text-cyan border-cyan/50 font-bold'
+                : 'te-btn py-2.5 px-1 flex flex-col items-center justify-center bg-[#141726] text-slate-500 border-slate-700 font-bold';
+            if (sfxEnabled) playMechSound('tap');
+        }
+
+        function toggleScanlines() {
+            scanlinesEnabled = !scanlinesEnabled;
+            const body = document.getElementById('appBody');
+            const btn = document.getElementById('crtBtn');
+            if (scanlinesEnabled) {
+                body.classList.add('scanlines');
+                btn.textContent = 'CRT:ON';
+            } else {
+                body.classList.remove('scanlines');
+                btn.textContent = 'CRT:OFF';
+            }
+        }
+
+        /*************************************************************************
+         * 10. FORGE / EDIT MODULE MODAL LOGIC
+         *************************************************************************/
+        function renderForgePickers() {
+            const glyphGrid = document.getElementById('glyphPickerGrid');
+            glyphGrid.innerHTML = GLYPH_OPTIONS.map(g => `
+                <button type="button" onclick="pickGlyph('${g}')"
+                    class="h-8 flex items-center justify-center text-sm border ${
+                        selectedGlyph === g ? 'bg-lime text-obsidian border-white' : 'bg-[#121524] border-transparent hover:border-slate-600'
+                    }">
+                    ${g}
+                </button>
+            `).join('');
+
+            const neonGrid = document.getElementById('neonPickerGrid');
+            neonGrid.innerHTML = Object.keys(NEON_CORES).map(key => {
+                const c = NEON_CORES[key];
+                const active = selectedNeon === key;
+                return `
+                    <button type="button" onclick="pickNeon('${key}')"
+                        style="background:${c.hex}"
+                        class="h-7 border ${active ? 'border-white ring-2 ring-white scale-105' : 'border-black opacity-50 hover:opacity-90'} flex items-center justify-center text-obsidian font-extrabold text-xs">
+                        ${active ? '✓' : ''}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function pickGlyph(g) {
+            selectedGlyph = g;
+            renderForgePickers();
+        }
+
+        function pickNeon(n) {
+            selectedNeon = n;
+            renderForgePickers();
+        }
+
+        function openForgeModal(questId = null) {
+            playMechSound('tap');
+            const modal = document.getElementById('forgeModal');
+            const title = document.getElementById('forgeModalTitle');
+            const delBtn = document.getElementById('deleteModBtn');
+            const idField = document.getElementById('forgeHabitId');
+            const nameField = document.getElementById('forgeNameInput');
+            const specField = document.getElementById('forgeSpecInput');
+            const catField = document.getElementById('forgeCategoryInput');
+            const xpField = document.getElementById('forgeXpInput');
+
+            if (questId) {
+                const q = quests.find(item => item.id === questId);
+                if (!q) return;
+                title.textContent = 'RECONFIGURE QUEST MODULE';
+                idField.value = q.id;
+                nameField.value = q.name;
+                specField.value = q.spec || '';
+                catField.value = q.category || 'CORE_CODE';
+                xpField.value = String(q.xp || 60);
+                selectedGlyph = q.glyph || '⚡';
+                selectedNeon = q.neon || 'lime';
+                delBtn.classList.remove('hidden');
+            } else {
+                title.textContent = 'FORGE NEW QUEST MODULE';
+                idField.value = '';
+                nameField.value = '';
+                specField.value = '';
+                catField.value = 'CORE_CODE';
+                xpField.value = '70';
+                selectedGlyph = '⚡';
+                selectedNeon = 'lime';
+                delBtn.classList.add('hidden');
+            }
+
+            renderForgePickers();
+            modal.classList.remove('hidden');
+            setTimeout(() => nameField.focus(), 60);
+        }
+
+        function closeForgeModal() {
+            document.getElementById('forgeModal').classList.add('hidden');
+        }
+
+        function saveHabitModule(e) {
+            e.preventDefault();
+            const id = document.getElementById('forgeHabitId').value;
+            const name = document.getElementById('forgeNameInput').value.trim();
+            const spec = document.getElementById('forgeSpecInput').value.trim() || 'Daily tactical execution protocol';
+            const category = document.getElementById('forgeCategoryInput').value;
+            const xp = Number(document.getElementById('forgeXpInput').value) || 60;
+
+            if (!name) return;
+
+            if (id) {
+                const target = quests.find(q => q.id === id);
+                if (target) {
+                    target.name = name;
+                    target.spec = spec;
+                    target.category = category;
+                    target.xp = xp;
+                    target.glyph = selectedGlyph;
+                    target.neon = selectedNeon;
+                    showHudToast('[MOD.UPDATED]', `${name} RECOMPILED`);
+                }
+            } else {
+                quests.unshift({
+                    id: 'mod-' + Date.now(),
+                    name,
+                    spec,
+                    category,
+                    xp,
+                    glyph: selectedGlyph,
+                    neon: selectedNeon,
+                    logs: {}
+                });
+                showHudToast('[MOD.DEPLOYED]', `${name} ONLINE`);
+            }
+
+            playMechSound('engage');
+            saveSystemState();
+            closeForgeModal();
+            renderHud();
+        }
+
+        function deleteCurrentModule() {
+            const id = document.getElementById('forgeHabitId').value;
+            if (!id) return;
+            quests = quests.filter(q => q.id !== id);
+            playMechSound('disengage');
+            saveSystemState();
+            closeForgeModal();
+            renderHud();
+            showHudToast('[MOD.SCRAPPED]', 'MODULE REMOVED FROM DECK');
+        }
+
+        /*************************************************************************
+         * 11. FACTORY REBOOT & CLOCK / TOAST UTILITIES
+         *************************************************************************/
+        function openRebootModal() {
+            document.getElementById('rebootModal').classList.remove('hidden');
+        }
+
+        function closeRebootModal() {
+            document.getElementById('rebootModal').classList.add('hidden');
+        }
+
+        function confirmFactoryReboot() {
+            quests = getFactoryQuests();
+            selectedDateKey = todayKey;
+            saveSystemState();
+            lastKnownLevel = computePlayerStats().level;
+            closeRebootModal();
+            playMechSound('levelup');
+            renderHud();
+            showHudToast('[SYS.REBOOT]', 'DEFAULT HUNTER QUESTS RESTORED');
+        }
+
+        let hudToastTimer = null;
+        function showHudToast(prefix, msg) {
+            const el = document.getElementById('hudToast');
+            document.getElementById('hudToastPrefix').textContent = prefix;
+            document.getElementById('hudToastMsg').textContent = msg;
+
+            el.classList.remove('opacity-0', '-translate-y-3');
+            el.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(hudToastTimer);
+            hudToastTimer = setTimeout(() => {
+                el.classList.add('opacity-0', '-translate-y-3');
+                el.classList.remove('opacity-100', 'translate-y-0');
+            }, 2100);
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function updateLiveClock() {
+            const d = new Date();
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            const ss = String(d.getSeconds()).padStart(2, '0');
+            document.getElementById('liveClockHud').textContent = `${hh}:${mm}:${ss}`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSystemState();
+            renderHud();
+            updateLiveClock();
+            setInterval(updateLiveClock, 1000);
+        });
+    </script>
+</body>
+</html>
+```
